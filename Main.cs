@@ -34,7 +34,9 @@ namespace KsWeather
 */
         void Awake()
         {
-            
+            UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks;
+            RenderingManager.AddToPostDrawQueue(0, OnDraw);
+            windForce = UnityEngine.Random.Range(0, 6) / 10.0f;
         }
 
         /*
@@ -42,7 +44,7 @@ namespace KsWeather
 */
         void Start()
         {
-            
+
         }
 
         /*
@@ -60,6 +62,22 @@ namespace KsWeather
         {
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
+
+            switch (1)
+            {
+                case 1:
+                    if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
+                    {
+                        windForce = UnityEngine.Random.Range(0, 3) / 10.0f;
+                    }
+                    break;
+                default:
+                    {
+                        windForce = UnityEngine.Random.Range(3, 7) / 10.0f;
+                    }
+                    break;
+
+            }
 
             if (windForce != 0f)
             {
