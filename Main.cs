@@ -13,7 +13,7 @@ namespace KsWeather
     public class KsMain : MonoBehaviour
     {
         private static Rect _windowPosition = new Rect();
-        public float windSpeed = 0.0f;
+        public float windForce = 0.0f;
         public double vesselHeight = 0;
         double Pressure = FlightGlobals.ActiveVessel.staticPressure;
         public double HighestPressure = FlightGlobals.getStaticPressure(0);
@@ -58,7 +58,34 @@ namespace KsWeather
 */
         void FixedUpdate()
         {
-          
+            if (!HighLogic.LoadedSceneIsFlight)
+                return;
+
+            if (windForce != 0f)
+            {
+                Vessel vessel = FlightGlobals.ActiveVessel;
+                if (vessel != null)
+                {
+
+                    if (vessel.parts.Count > 0)
+                    {
+                        foreach (Part p in vessel.parts)
+                        {
+                            p.rigidbody.AddForce(0, 0, windForce);// * p.maximum_drag);
+                        }
+                        //Part testPart = vessel.parts[0];
+                        //testPart.rigidbody.AddForce(forceDirection * windForce);
+                    }
+                    else
+                    {
+                        //Debug.Log("FSweatherSystem: activeVessel parts count is < 0");
+                    }
+                }
+                else
+                {
+                    //Debug.Log("FSweatherSystem: activeVessel is null");
+                }
+            }
         }
 
 //*
@@ -103,12 +130,11 @@ namespace KsWeather
                 windSpeedActive = false;
             }
 
-                _windowPosition = GUILayout.Window(10, _windowPosition, OnWindow, "Wind Display");
+        }
 
-            if (_windowPosition.x == 0 && _windowPosition.y == 0)
-            {
-                _windowPosition = _windowPosition.CenterScreen();
-            }
+        void OnGUI()
+        {
+            _windowPosition = GUILayout.Window(10, _windowPosition, OnWindow, "KsWindDetector");
         }
 
 // Called when the GUI is loaded?
@@ -122,8 +148,8 @@ namespace KsWeather
             {
 
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("windspeed: " + (windSpeed * 10) + " kernats");
-                GUILayout.Label("Vessel Altitude: " + vesselHeight);
+                GUILayout.Label("windspeed: " + (windForce * 10) + " kernauts");
+                GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
                 GUILayout.Label("InAtmo? : True");
@@ -133,8 +159,8 @@ namespace KsWeather
             else
             {
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("windspeed: " + "0" + " kernats");
-                GUILayout.Label("Vessel Altitude: " + vesselHeight);
+                GUILayout.Label("windspeed: " + "0" + " kernauts");
+                GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
                 GUILayout.Label("InAtmo? : False");
