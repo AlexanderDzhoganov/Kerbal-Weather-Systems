@@ -71,7 +71,7 @@ namespace KsWeather
                 ConfigNode save = ConfigNode.CreateConfigFromObject(this);
                 save.Save(File);
             }
-            catch (Exception e) { RTLog.Notify("An error occurred while attempting to save: " + e.Message); }
+            catch (Exception e) { Debug.Log("An error occurred while attempting to save: " + e.Message); }
         }
 
         public static Settings Load()
@@ -87,9 +87,33 @@ namespace KsWeather
 
             return settings;
         }
-        
+
+        private void OnDraw()
+        {
+
+            double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude);
+
+            if (Pressure != 0)
+            {
+                windSpeedActive = true;
+
+            }
+            else
+            {
+
+                windSpeedActive = false;
+            }
+
+                _windowPosition = GUILayout.Window(10, _windowPosition, OnWindow, "Wind Display");
+
+            if (_windowPosition.x == 0 && _windowPosition.y == 0)
+            {
+                _windowPosition = _windowPosition.CenterScreen();
+            }
+        }
+
 // Called when the GUI is loaded?
-        void OnGui()
+        void OnWindow(int windowId)
         {
             double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude);
             double HighestPressure = FlightGlobals.getStaticPressure(0.0);
