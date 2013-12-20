@@ -7,7 +7,7 @@ namespace KsWeather
     public class KsMain : MonoBehaviour
     {
         private static Rect _windowPosition = new Rect();
-        public float windSpeed = Random.Range(0, 6) / 10.0f;
+        public float windSpeed = 0.0f;
         public double vesselHeight = 0;
         double Pressure = FlightGlobals.ActiveVessel.staticPressure;
         public double HighestPressure = FlightGlobals.getStaticPressure(0);
