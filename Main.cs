@@ -74,13 +74,12 @@ namespace KsWeather
             catch (Exception e) { Debug.Log("An error occurred while attempting to save: " + e.Message); }
         }
 
-        public static Settings Load()
+        public static Settings OnLoad()
         {
             ConfigNode load = ConfigNode.Load(File);
             Settings settings = new Settings();
             if (load == null)
             {
-                settings.Save();
                 return settings;
             }
             ConfigNode.LoadObjectFromConfig(settings, load);
