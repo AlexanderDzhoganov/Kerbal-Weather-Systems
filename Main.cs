@@ -1,5 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Reflection;
 using UnityEngine;
 using KSP.IO;
+using KsWeather.Extensions;
 
 namespace KsWeather
 {
@@ -13,6 +19,7 @@ namespace KsWeather
         public double HighestPressure = FlightGlobals.getStaticPressure(0);
         public bool windSpeedActive = true;
 
+        private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KsWeather/Plugins/KsWeatherConfig.cfg"; } }
 /*
 * use the Awake() method instead of the constructor for initializing data because Unity uses
 * Serialization a lot.
@@ -54,12 +61,63 @@ namespace KsWeather
           
         }
 
-        /*
-* Called when the game is leaving the scene (or exiting). Perform any clean up work here.
-*/
-        void OnDestroy()
+//*
+
+
+        public void Save()
         {
-            
+            try
+            {
+                ConfigNode save = ConfigNode.CreateConfigFromObject(this);
+                save.Save(File);
+            }
+            catch (Exception e) { RTLog.Notify("An error occurred while attempting to save: " + e.Message); }
+        }
+
+        public static Settings Load()
+        {
+            ConfigNode load = ConfigNode.Load(File);
+            Settings settings = new Settings();
+            if (load == null)
+            {
+                settings.Save();
+                return settings;
+            }
+            ConfigNode.LoadObjectFromConfig(settings, load);
+
+            return settings;
+        }
+        
+// Called when the GUI is loaded?
+        void OnGui()
+        {
+            double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude);
+            double HighestPressure = FlightGlobals.getStaticPressure(0.0);
+            vesselHeight = FlightGlobals.ship_altitude;
+
+            if (Pressure != 0)
+            {
+
+                GUILayout.BeginHorizontal(GUILayout.Width(600));
+                GUILayout.Label("windspeed: " + (windSpeed * 10) + " kernats");
+                GUILayout.Label("Vessel Altitude: " + vesselHeight);
+                GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
+                GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
+                GUILayout.Label("InAtmo? : True");
+                GUILayout.EndHorizontal();
+                GUI.DragWindow();
+            }
+            else
+            {
+                GUILayout.BeginHorizontal(GUILayout.Width(600));
+                GUILayout.Label("windspeed: " + "0" + " kernats");
+                GUILayout.Label("Vessel Altitude: " + vesselHeight);
+                GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
+                GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
+                GUILayout.Label("InAtmo? : False");
+                GUILayout.EndHorizontal();
+                GUI.DragWindow();
+            }
         }
     }
 }
