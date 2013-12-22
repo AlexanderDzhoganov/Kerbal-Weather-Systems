@@ -59,7 +59,6 @@ namespace KsWeather
 */
         void FixedUpdate()
         {
-            int caseSwitch = 1;
             Pressure = FlightGlobals.ActiveVessel.staticPressure;
             HighestPressure = FlightGlobals.getStaticPressure(0);
 
@@ -67,27 +66,13 @@ namespace KsWeather
                 return;
             if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
             {
-                caseSwitch = 1;
+                windForce = UnityEngine.Random.Range(0, 3) / 10.0f;
             }
             else
             {
-                caseSwitch = 2;
+                windForce = UnityEngine.Random.Range(3, 7) / 10.0f;
             }
-            switch (caseSwitch)
-            {
-                case 1:
-                    
-                    {
-                        windForce = UnityEngine.Random.Range(0, 3) / 10.0f;
-                    }
-                    break;
-                default:
-                    {
-                        windForce = UnityEngine.Random.Range(3, 7) / 10.0f;
-                    }
-                    break;
-
-            }
+            
 
             if (windForce != 0f)
             {
