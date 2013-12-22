@@ -65,11 +65,18 @@ namespace KsWeather
 
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
-
+            if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
+            {
+                caseSwitch = 1;
+            }
+            else
+            {
+                caseSwitch = 2;
+            }
             switch (caseSwitch)
             {
                 case 1:
-                    if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
+                    
                     {
                         windForce = UnityEngine.Random.Range(0, 3) / 10.0f;
                     }
