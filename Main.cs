@@ -36,7 +36,6 @@ namespace KsWeather
         {
             UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks;
             RenderingManager.AddToPostDrawQueue(0, OnDraw);
-            windForce = UnityEngine.Random.Range(0, 6) / 10.0f;
         }
 
         /*
@@ -109,27 +108,18 @@ namespace KsWeather
 //*
 
 
-        public void Save()
+        public void Save(ConfigNode node)
         {
-            try
-            {
-                ConfigNode save = ConfigNode.CreateConfigFromObject(this);
-                save.Save(File);
-            }
-            catch (Exception e) { Debug.Log("An error occurred while attempting to save: " + e.Message); }
+            PluginConfiguration config = PluginConfiguration.CreateForType<KsWeather>();
+            config.SetValue("Window Position", _windowPosition);
+            config.save();
         }
 
-        public static Settings OnLoad()
+        public void Load(ConfigNode node)
         {
-            ConfigNode load = ConfigNode.Load(File);
-            Settings settings = new Settings();
-            if (load == null)
-            {
-                return settings;
-            }
-            ConfigNode.LoadObjectFromConfig(settings, load);
-
-            return settings;
+             PluginConfiguration config = PluginConfiguration.CreateForType<KsWeather>();
+            config.load();
+            _windowPosition = config.GetValue<Rect>("Window Position");
         }
 
         private void OnDraw()
