@@ -110,14 +110,14 @@ namespace KsWeather
 
         public void Save(ConfigNode node)
         {
-            PluginConfiguration config = PluginConfiguration.CreateForType<KsWeather>();
+            PluginConfiguration config = PluginConfiguration.CreateForType<KsMain>();
             config.SetValue("Window Position", _windowPosition);
             config.save();
         }
 
         public void Load(ConfigNode node)
         {
-             PluginConfiguration config = PluginConfiguration.CreateForType<KsWeather>();
+             PluginConfiguration config = PluginConfiguration.CreateForType<KsMain>();
             config.load();
             _windowPosition = config.GetValue<Rect>("Window Position");
         }
