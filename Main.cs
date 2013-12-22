@@ -59,10 +59,14 @@ namespace KsWeather
 */
         void FixedUpdate()
         {
+            int caseSwitch = 1;
+            Pressure = FlightGlobals.ActiveVessel.staticPressure;
+            HighestPressure = FlightGlobals.getStaticPressure(0);
+
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
 
-            switch (1)
+            switch (caseSwitch)
             {
                 case 1:
                     if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
