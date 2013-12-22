@@ -84,7 +84,7 @@ namespace KsWeather
                     {
                         foreach (Part p in vessel.parts)
                         {
-                            p.rigidbody.AddForce(0, 0, windForce);// * p.maximum_drag);
+                            p.rigidbody.AddForce(0, 0, windForce * p.rigidbody.drag);// * p.maximum_drag);
                         }
                         //Part testPart = vessel.parts[0];
                         //testPart.rigidbody.AddForce(forceDirection * windForce);
