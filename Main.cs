@@ -15,6 +15,7 @@ namespace KsWeather
         private static Rect _windowPosition = new Rect();
         public float windForce = 0.0f;
         public Vector3 windDirection;
+        public Vector3 windDrag;
         public double partDrag = 0.0;
         public float vesselDrag = 0.0f;
         public double vesselHeight = 0;
@@ -70,6 +71,7 @@ namespace KsWeather
         {
             Pressure = FlightGlobals.ActiveVessel.staticPressure;
             HighestPressure = FlightGlobals.getStaticPressure(0);
+            
 
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
@@ -93,16 +95,21 @@ namespace KsWeather
             if (windForce != 0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
+                
+
                 if (vessel != null)
                 {
 
                     if (vessel.parts.Count > 0)
                     {
-                        vesselDrag = FlightGlobals.ActiveVessel.Parts.Count * (vessel.rigidbody.angularDrag / 10);
+                       
+                        
                         foreach (Part p in vessel.parts)
                         {
-                            p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
-                            
+                            var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
+                            windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.srfSpeed);
+                            //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
+                            vesselDrag = FlightGlobals.ActiveVessel.Parts.Count * FlightGlobals.DragMultiplier;
                         }
                         //Part testPart = vessel.parts[0];
                         //testPart.rigidbody.AddForce(forceDirection * windForce);
@@ -225,7 +232,7 @@ namespace KsWeather
             {
                 windForce += 0.1f;
             }
-            if (GUI.Button(new Rect(160, 100, 150, 25), "Wind Speed Down"))
+            if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down"))
             {
                 if (windForce > 0)
                 {
@@ -234,11 +241,26 @@ namespace KsWeather
                 else
                     windForce -= 0.0f;
             }
+            if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero"))
+            {
+                windForce = 0;
+            }
+            if (GUI.Button(new Rect(500, 100, 100, 25), "Manual Wind"))
+            {
+                if(windActive == true)
+                {
+                    windActive = false;
+                }
+                else if (windActive == false)
+                {
+                    windActive = true;
+                }
+            }
             if (Pressure != 0)
             {
 
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Windspeed: " + (windForce * 10) + " kernauts");
+                GUILayout.Label("Windspeed: " + (windForce * 10).ToString("0.00") + " kernauts");
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
@@ -246,7 +268,7 @@ namespace KsWeather
                 GUILayout.EndHorizontal();
                 GUILayout.BeginVertical(GUILayout.Height(100));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.000"));
+                GUILayout.Label("Vessel Drag: " + windDrag.ToString("0.00"));
                 GUILayout.Label("Wind Direction: " + windDirectionLabel);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
@@ -263,7 +285,7 @@ namespace KsWeather
                 GUILayout.EndHorizontal();
                 GUILayout.BeginVertical(GUILayout.Height(50));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.000"));
+                GUILayout.Label("Vessel Drag: " + windDrag.ToString("0.00"));
                 GUILayout.Label("Wind Direction: N/a");
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
