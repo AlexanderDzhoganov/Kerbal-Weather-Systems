@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +43,7 @@ namespace KsWeather
         {
             UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks;
             RenderingManager.AddToPostDrawQueue(0, OnDraw);
-            windDirectionNumb = UnityEngine.Random.Range(0, 9);
+            windDirectionNumb = UnityEngine.Random.Range(1, 9);
             
                
         }
@@ -103,18 +102,19 @@ namespace KsWeather
 
                     if (vessel.parts.Count > 0)
                     {
-                       
-                        
+                        vesselDrag = (windDrag.magnitude * windForce * FlightGlobals.ActiveVessel.GetSrfVelocity().magnitude) / 10;
+                        if(windForce == 0)
+                        {
+                            vesselDrag = 0;
+                        }
                         foreach (Part p in vessel.parts)
                         {
                             var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
                             windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.GetSrfVelocity().magnitude);
                             //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
-                            //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
+                            p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
                             
                             
-                            
-
                         }
                         //Part testPart = vessel.parts[0];
                         //testPart.rigidbody.AddForce(forceDirection * windForce);
@@ -130,11 +130,6 @@ namespace KsWeather
                 }
             }
 
-            vesselDrag = windDrag.magnitude * windDirection.magnitude * windForce * FlightGlobals.ActiveVessel.GetSrfVelocity().magnitude;
-            if (windActive == false)
-            {
-                windForce = windForce * vesselDrag;
-            }
             switch (windDirectionNumb)
             
             
@@ -142,50 +137,50 @@ namespace KsWeather
                 case 1:
                     windDirectionLabel = "North";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 5);
+                    windDirection.y = windForce * ((vesselDrag /5) * windDrag.magnitude);
                     windDirection.z = 0;
                     break;
                 case 2:
                     windDirectionLabel = "East";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = windForce * (vesselDrag / 5);
+                    windDirection.z = -windForce * ((vesselDrag / 5) * windDrag.magnitude);
                     break;
                 case 3:
                     windDirectionLabel = "South";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 5);
+                    windDirection.y = -windForce * ((vesselDrag / 5) * windDrag.magnitude);
                     windDirection.z = 0;
                     break;
                 case 4:
                     windDirectionLabel = "West";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = -windForce * (vesselDrag / 5);
+                    windDirection.z = windForce * ((vesselDrag / 5) * windDrag.magnitude);
                     break;
                 case 5:
                     windDirectionLabel = "North East";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 5);
-                    windDirection.z = windForce * (vesselDrag / 5);
+                    windDirection.y = windForce * ((vesselDrag / 5) * windDrag.magnitude);
+                    windDirection.z = -windForce * ((vesselDrag / 5) * windDrag.magnitude);
                     break;
                 case 6:
                     windDirectionLabel = "South East";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 5);
-                    windDirection.z = windForce * (vesselDrag / 5);
+                    windDirection.y = -windForce * ((vesselDrag / 5) * windDrag.magnitude);
+                    windDirection.z = -windForce * ((vesselDrag / 5) * windDrag.magnitude);
                     break;
                 case 7:
                     windDirectionLabel = "South West";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 5);
-                    windDirection.z = -windForce * (vesselDrag / 5);
+                    windDirection.y = -windForce * ((vesselDrag / 5) * windDrag.magnitude);
+                    windDirection.z = windForce * ((vesselDrag / 5) * windDrag.magnitude);
                     break;
                 case 8:
                     windDirectionLabel = "North West";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 5);
-                    windDirection.z = -windForce * (vesselDrag / 5);
+                    windDirection.y = windForce * ((vesselDrag / 5) * windDrag.magnitude);
+                    windDirection.z = windForce * ((vesselDrag / 5) * windDrag.magnitude);
                     break;
                 default:
                     windDirectionLabel = "N/a";
@@ -280,7 +275,7 @@ namespace KsWeather
                 GUILayout.EndHorizontal();
                 GUILayout.BeginVertical(GUILayout.Height(100));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Vessel Drag: " + windDrag.ToString("0.000"));
+                GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.0000"));
                 GUILayout.Label("Wind Direction: " + windDirectionLabel);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
@@ -297,7 +292,7 @@ namespace KsWeather
                 GUILayout.EndHorizontal();
                 GUILayout.BeginVertical(GUILayout.Height(50));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Vessel Drag: " + windDrag.ToString("0.000"));
+                GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.0000"));
                 GUILayout.Label("Wind Direction: N/a");
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
