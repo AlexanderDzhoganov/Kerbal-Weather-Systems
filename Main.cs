@@ -128,7 +128,7 @@ namespace KsWeather
 
                     if (vessel.parts.Count > 0)
                     {
-                        vesselDrag = (windDrag.magnitude * windForce * FlightGlobals.ActiveVessel.GetSrfVelocity().magnitude) / 100;
+                        vesselDrag = (windDrag.magnitude * windForce) / 100;
                         if(windForce == 0)
                         {
                             vesselDrag = 0;
@@ -166,63 +166,119 @@ namespace KsWeather
                     //Debug.Log("FSweatherSystem: activeVessel is null");
                 }
             }
-
-            switch (windDirectionNumb)
-            
-            
+            if (FlightGlobals.ActiveVessel.srfSpeed != 0 )
             {
-                case 1:
-                    windDirectionLabel = "North";
-                    windDirection.x = 0;
-                    windDirection.y = windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    windDirection.z = 0;
-                    break;
-                case 2:
-                    windDirectionLabel = "East";
-                    windDirection.x = 0;
-                    windDirection.y = 0;
-                    windDirection.z = -windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    break;
-                case 3:
-                    windDirectionLabel = "South";
-                    windDirection.x = 0;
-                    windDirection.y = -windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    windDirection.z = 0;
-                    break;
-                case 4:
-                    windDirectionLabel = "West";
-                    windDirection.x = 0;
-                    windDirection.y = 0;
-                    windDirection.z = windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    break;
-                case 5:
-                    windDirectionLabel = "North East";
-                    windDirection.x = 0;
-                    windDirection.y = windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    windDirection.z = -windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    break;
-                case 6:
-                    windDirectionLabel = "South East";
-                    windDirection.x = 0;
-                    windDirection.y = -windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    windDirection.z = -windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    break;
-                case 7:
-                    windDirectionLabel = "South West";
-                    windDirection.x = 0;
-                    windDirection.y = -windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    windDirection.z = windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    break;
-                case 8:
-                    windDirectionLabel = "North West";
-                    windDirection.x = 0;
-                    windDirection.y = windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    windDirection.z = windForce * ((vesselDrag / 10) * (windDrag.magnitude / 20));
-                    break;
-                default:
-                    windDirectionLabel = "N/a";
-                    break;
+                switch (windDirectionNumb)
+                {
+                    case 1:
+                        windDirectionLabel = "North";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        windDirection.z = 0;
+                        break;
+                    case 2:
+                        windDirectionLabel = "East";
+                        windDirection.x = 0;
+                        windDirection.y = 0;
+                        windDirection.z = -windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        break;
+                    case 3:
+                        windDirectionLabel = "South";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        windDirection.z = 0;
+                        break;
+                    case 4:
+                        windDirectionLabel = "West";
+                        windDirection.x = 0;
+                        windDirection.y = 0;
+                        windDirection.z = windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        break;
+                    case 5:
+                        windDirectionLabel = "North East";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        windDirection.z = -windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        break;
+                    case 6:
+                        windDirectionLabel = "South East";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        windDirection.z = -windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        break;
+                    case 7:
+                        windDirectionLabel = "South West";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        windDirection.z = windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        break;
+                    case 8:
+                        windDirectionLabel = "North West";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        windDirection.z = windForce * ((vesselDrag / 5) * (windDrag.magnitude / 10));
+                        break;
+                    default:
+                        windDirectionLabel = "N/a";
+                        break;
+                }
             }
+            else
+                switch (windDirectionNumb)
+                {
+                    case 1:
+                        windDirectionLabel = "North";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * (vesselDrag);
+                        windDirection.z = 0;
+                        break;
+                    case 2:
+                        windDirectionLabel = "East";
+                        windDirection.x = 0;
+                        windDirection.y = 0;
+                        windDirection.z = -windForce * (vesselDrag);
+                        break;
+                    case 3:
+                        windDirectionLabel = "South";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * (vesselDrag);
+                        windDirection.z = 0;
+                        break;
+                    case 4:
+                        windDirectionLabel = "West";
+                        windDirection.x = 0;
+                        windDirection.y = 0;
+                        windDirection.z = windForce * (vesselDrag);
+                        break;
+                    case 5:
+                        windDirectionLabel = "North East";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * (vesselDrag);
+                        windDirection.z = -windForce * (vesselDrag);
+                        break;
+                    case 6:
+                        windDirectionLabel = "South East";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * (vesselDrag);
+                        windDirection.z = -windForce * (vesselDrag);
+                        break;
+                    case 7:
+                        windDirectionLabel = "South West";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * (vesselDrag);
+                        windDirection.z = windForce * (vesselDrag);
+                        break;
+                    case 8:
+                        windDirectionLabel = "North West";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * ((vesselDrag / 2));
+                        windDirection.z = windForce * ((vesselDrag / 2));
+                        break;
+                    default:
+                        windDirectionLabel = "N/a";
+                        break;
+                }
+            
         }
 
 //*
