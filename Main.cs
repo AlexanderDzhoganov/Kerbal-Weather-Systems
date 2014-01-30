@@ -73,7 +73,6 @@ namespace KsWeather
 
         }
 
-
         /*
 * Called at a fixed time interval determined by the physics time step.
 */
@@ -88,10 +87,7 @@ namespace KsWeather
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
 
-            float time1 = 10.0f;
-            float currentTime = Time.fixedTime;
-
-            if (Time.fixedTime > time1 + 10) { currentTime = Time.fixedTime; windStuff(); }
+            InvokeRepeating("windStuff", 1, 10);
 
             if (GForce <= 4)
             {
@@ -280,6 +276,7 @@ namespace KsWeather
         //*
         public void windStuff()
         {
+            
             if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
             {
                 windMinimum = 0.0f;
@@ -289,7 +286,7 @@ namespace KsWeather
                 if (windActive == false)
                 {
                     
-                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 30.0f);
+                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 3.0f);
                     windFinal = windInitial;
                     windInitial = UnityEngine.Random.Range(0, 6) / 10.0f;
                 }
