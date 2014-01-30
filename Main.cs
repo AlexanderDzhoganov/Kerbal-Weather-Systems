@@ -271,8 +271,8 @@ namespace KsWeather
                     case 8:
                         windDirectionLabel = "North West";
                         windDirection.x = 0;
-                        windDirection.y = windForce * ((vesselDrag / 2));
-                        windDirection.z = windForce * ((vesselDrag / 2));
+                        windDirection.y = windForce * (vesselDrag);
+                        windDirection.z = windForce * (vesselDrag);
                         break;
                     default:
                         windDirectionLabel = "N/a";
@@ -345,17 +345,35 @@ namespace KsWeather
             {
                 windForce = 0;
             }
-            if (GUI.Button(new Rect(500, 100, 100, 25), "Manual Wind"))
+            if(windActive == false)
             {
-                if(windActive == true)
+                if (GUI.Button(new Rect(500, 100, 100, 25), "Automatic Wind"))
                 {
-                    windActive = false;
-                }
-                else if (windActive == false)
-                {
-                    windActive = true;
+                    if (windActive == true)
+                    {
+                        windActive = false;
+                    }
+                    else if (windActive == false)
+                    {
+                        windActive = true;
+                    }
                 }
             }
+            else
+            {
+                if (GUI.Button(new Rect(500, 100, 100, 25), "Manual Wind"))
+                {
+                    if (windActive == true)
+                    {
+                        windActive = false;
+                    }
+                    else if (windActive == false)
+                    {
+                        windActive = true;
+                    }
+                }
+            }
+            
             if (Pressure != 0)
             {
                 if (DrakeWarning == false && DrakeCome == false)
