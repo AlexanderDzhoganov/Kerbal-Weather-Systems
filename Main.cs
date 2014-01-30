@@ -15,6 +15,10 @@ namespace KsWeather
     {
         private static Rect _windowPosition = new Rect();
         public float windForce = 0.0f;
+        public float windMinimum = 0.0f;
+        public float windMaximum = 3.0f;
+        public float windInitial = 0.0f;
+        public float windFinal = 0.0f;
         public Vector3 windDirection;
         public Vector3 windDrag;
         public float landDrag;
@@ -32,10 +36,10 @@ namespace KsWeather
         public bool windSpeedActive = true;
 
         private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KsWeather/Plugins/KsWeatherConfig.cfg"; } }
-/*
-* use the Awake() method instead of the constructor for initializing data because Unity uses
-* Serialization a lot.
-*/
+        /*
+        * use the Awake() method instead of the constructor for initializing data because Unity uses
+        * Serialization a lot.
+        */
         public void KSMain()
         {
             Cell cell = new Cell();
@@ -49,8 +53,8 @@ namespace KsWeather
             UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks;
             RenderingManager.AddToPostDrawQueue(0, OnDraw);
             windDirectionNumb = UnityEngine.Random.Range(1, 9);
-            
-               
+
+
         }
 
         /*
@@ -58,7 +62,7 @@ namespace KsWeather
 */
         void Start()
         {
-            
+
         }
 
         /*
@@ -66,8 +70,9 @@ namespace KsWeather
 */
         void Update()
         {
-            
+
         }
+
 
         /*
 * Called at a fixed time interval determined by the physics time step.
@@ -79,20 +84,26 @@ namespace KsWeather
             GForce = FlightGlobals.ActiveVessel.geeForce;
 
 
+
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
-           
-            if(GForce <= 4)
+
+            float time1 = 10.0f;
+            float currentTime = Time.fixedTime;
+
+            if (Time.fixedTime > time1 + 10) { currentTime = Time.fixedTime; windStuff(); }
+
+            if (GForce <= 4)
             {
                 DrakeCome = false;
                 DrakeWarning = false;
             }
-            else if(GForce > 4 && GForce < 7)
+            else if (GForce > 4 && GForce < 7)
             {
                 DrakeWarning = true;
                 DrakeCome = false;
             }
-            else if(GForce >= 7)
+            else if (GForce >= 7)
             {
                 DrakeWarning = false;
                 DrakeCome = true;
@@ -103,26 +114,13 @@ namespace KsWeather
                 DrakeWarning = false;
             }
 
-            if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
-            {
-                if (windActive == false)
-                {
-                    windForce = UnityEngine.Random.Range(0, 3) / 10.0f;
-                }
-            }
-            else
-            {
-                if (windActive == false)
-                {
-                    windForce = UnityEngine.Random.Range(3, 7) / 10.0f;
-                }
-            }
             
+
 
             if (windForce != 0.0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
-                
+
 
                 if (vessel != null)
                 {
@@ -130,25 +128,25 @@ namespace KsWeather
                     if (vessel.parts.Count > 0)
                     {
                         vesselDrag = (windDrag.magnitude * windForce) / 100;
-                        if(windForce == 0)
+                        if (windForce == 0)
                         {
                             vesselDrag = 0;
                         }
                         foreach (Part p in vessel.parts)
                         {
-                            if(DrakeCome == true)
+                            if (DrakeCome == true)
                             {
                                 p.rigidbody.AddExplosionForce(100, windDirection, 10);
                             }
                             var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
-                            landDrag = p.maximum_drag;
+                            landDrag = ((float)(coeff * p.rigidbody.mass));
                             windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.GetSrfVelocity().magnitude);
-                            
-                            
+
+
                             //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
                             p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
-                            
-                            
+
+
                         }
                         //Part testPart = vessel.parts[0];
                         //testPart.rigidbody.AddForce(forceDirection * windForce);
@@ -227,60 +225,87 @@ namespace KsWeather
                     case 1:
                         windDirectionLabel = "North";
                         windDirection.x = 0;
-                        windDirection.y = windForce * (landDrag/ 10);
+                        windDirection.y = windForce * (landDrag * 100);
                         windDirection.z = 0;
                         break;
                     case 2:
                         windDirectionLabel = "East";
                         windDirection.x = 0;
                         windDirection.y = 0;
-                        windDirection.z = -windForce * (landDrag / 10);
+                        windDirection.z = -windForce * (landDrag * 100);
                         break;
                     case 3:
                         windDirectionLabel = "South";
                         windDirection.x = 0;
-                        windDirection.y = -windForce * (landDrag / 10);
+                        windDirection.y = -windForce * (landDrag * 100);
                         windDirection.z = 0;
                         break;
                     case 4:
                         windDirectionLabel = "West";
                         windDirection.x = 0;
                         windDirection.y = 0;
-                        windDirection.z = windForce * (landDrag / 10);
+                        windDirection.z = windForce * (landDrag * 100);
                         break;
                     case 5:
                         windDirectionLabel = "North East";
                         windDirection.x = 0;
-                        windDirection.y = windForce * (landDrag / 10);
-                        windDirection.z = -windForce * (landDrag / 10);
+                        windDirection.y = windForce * (landDrag * 100);
+                        windDirection.z = -windForce * (landDrag * 100);
                         break;
                     case 6:
                         windDirectionLabel = "South East";
                         windDirection.x = 0;
-                        windDirection.y = -windForce * (landDrag / 10);
-                        windDirection.z = -windForce * (landDrag / 10);
+                        windDirection.y = -windForce * (landDrag * 100);
+                        windDirection.z = -windForce * (landDrag * 100);
                         break;
                     case 7:
                         windDirectionLabel = "South West";
                         windDirection.x = 0;
-                        windDirection.y = -windForce * (landDrag / 10);
-                        windDirection.z = windForce * (landDrag / 10);
+                        windDirection.y = -windForce * (landDrag * 100);
+                        windDirection.z = windForce * (landDrag * 100);
                         break;
                     case 8:
                         windDirectionLabel = "North West";
                         windDirection.x = 0;
-                        windDirection.y = windForce * (landDrag / 10);
-                        windDirection.z = windForce * (landDrag / 10);
+                        windDirection.y = windForce * (landDrag * 100);
+                        windDirection.z = windForce * (landDrag * 100);
                         break;
                     default:
                         windDirectionLabel = "N/a";
                         break;
                 }
-            
+
         }
 
-//*
-
+        //*
+        public void windStuff()
+        {
+            if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
+            {
+                windMinimum = 0.0f;
+                windMaximum = 6.0f;
+                
+                windFinal = UnityEngine.Random.Range(0, 6) / 10.0f;
+                if (windActive == false)
+                {
+                    
+                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 30.0f);
+                    windFinal = windInitial;
+                    windInitial = UnityEngine.Random.Range(0, 6) / 10.0f;
+                }
+            }
+            else
+            {
+                if (windActive == false)
+                {
+                    windMinimum = 3.0f;
+                    windMaximum = 15.0f;
+                    windInitial = UnityEngine.Random.Range(0, 6) / 10.0f;
+                    windFinal = UnityEngine.Random.Range(0, 6) / 10.0f;
+                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 1.0f);
+                }
+            }
+        }
 
         public void Save(ConfigNode node)
         {
@@ -291,7 +316,7 @@ namespace KsWeather
 
         public void Load(ConfigNode node)
         {
-             PluginConfiguration config = PluginConfiguration.CreateForType<KsMain>();
+            PluginConfiguration config = PluginConfiguration.CreateForType<KsMain>();
             config.load();
             _windowPosition = config.GetValue<Rect>("Window Position");
         }
@@ -317,10 +342,10 @@ namespace KsWeather
         void OnGUI()
         {
             _windowPosition = GUILayout.Window(10, _windowPosition, OnWindow, "Weather~");
-            
+
         }
 
-// Called when the GUI is loaded?
+        // Called when the GUI is loaded?
         void OnWindow(int windowId)
         {
             double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude);
@@ -343,7 +368,7 @@ namespace KsWeather
             {
                 windForce = 0;
             }
-            if(windActive == false)
+            if (windActive == false)
             {
                 if (GUI.Button(new Rect(500, 100, 100, 25), "Automatic Wind"))
                 {
@@ -371,7 +396,7 @@ namespace KsWeather
                     }
                 }
             }
-            
+
             if (Pressure != 0)
             {
                 if (DrakeWarning == false && DrakeCome == false)
@@ -390,8 +415,8 @@ namespace KsWeather
                     GUILayout.EndVertical();
                     GUILayout.EndHorizontal();
                     GUI.DragWindow();
-                } 
-                else if(DrakeWarning == true)
+                }
+                else if (DrakeWarning == true)
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
                     GUILayout.Label("Windspeed: " + (windForce * 10).ToString("0.00") + " kernauts");
@@ -409,15 +434,15 @@ namespace KsWeather
                     GUILayout.EndHorizontal();
                     GUI.DragWindow();
                 }
-                else if(DrakeCome == true)
+                else if (DrakeCome == true)
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(150));
                     GUILayout.Label("Good Boy~");
                     GUILayout.EndHorizontal();
                     GUI.DragWindow();
                 }
-                
-                
+
+
             }
             else
             {
