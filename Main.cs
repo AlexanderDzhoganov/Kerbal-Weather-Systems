@@ -310,7 +310,7 @@ namespace KsWeather
                         windSteppingProgress = 0;                                                                                                       //reset this
                         windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
                         windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = UnityEngine.Random.Range(20, 50);
+                        windSteppingDuration = 1;
                     }
                     //Calc the new Force value based on how far from 0 to duration we have gone
                     windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
@@ -331,7 +331,7 @@ namespace KsWeather
                         windSteppingProgress = 0;                                                                                                       //reset this
                         windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
                         windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = UnityEngine.Random.Range(20, 50);
+                        windSteppingDuration = 50;
                     }
                     //Calc the new Force value based on how far from 0 to duration we have gone
                     windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
