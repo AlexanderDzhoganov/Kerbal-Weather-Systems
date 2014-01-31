@@ -1,3 +1,7 @@
+//Honourable Mentions and contributions to the code:
+//Cilph (he's an ass about it sometimes), TriggerAu (for helping me with a bunch of functionalities),
+//DYJ, Scott Manley, taniwha, Majiir (for kethane co-op and lots of coding help), and many more!
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,6 +58,9 @@ namespace KsWeather
             RenderingManager.AddToPostDrawQueue(0, OnDraw);
             windDirectionNumb = UnityEngine.Random.Range(1, 9);
 
+            InvokeRepeating("windStuff", 1, 1);
+            windSteppingStartTime = -100;    //-100 so it will reset on first run
+            windSteppingDuration = 5.0; //wind step duration
 
         }
 
@@ -83,11 +90,10 @@ namespace KsWeather
             GForce = FlightGlobals.ActiveVessel.geeForce;
 
 
-
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
 
-            InvokeRepeating("windStuff", 1, 10);
+
 
             if (GForce <= 4)
             {
@@ -130,6 +136,7 @@ namespace KsWeather
                         }
                         foreach (Part p in vessel.parts)
                         {
+                            
                             if (DrakeCome == true)
                             {
                                 p.rigidbody.AddExplosionForce(100, windDirection, 10);
@@ -137,7 +144,6 @@ namespace KsWeather
                             var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
                             landDrag = ((float)(coeff * p.rigidbody.mass));
                             windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.GetSrfVelocity().magnitude);
-
 
                             //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
                             p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
@@ -274,21 +280,40 @@ namespace KsWeather
         }
 
         //*
+        Double windSteppingStartTime = -100;    //-100 so it will reset on first run
+        Double windSteppingDuration = 5.0; //wind step duration
+        Double windSteppingProgress;
+
         public void windStuff()
         {
-            
+
+
             if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
             {
                 windMinimum = 0.0f;
                 windMaximum = 6.0f;
-                
-                windFinal = UnityEngine.Random.Range(0, 6) / 10.0f;
+ 
+                //windFinal = UnityEngine.Random.Range(0, 6) / 10.0f;
                 if (windActive == false)
                 {
-                    
-                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 3.0f);
-                    windFinal = windInitial;
-                    windInitial = UnityEngine.Random.Range(0, 6) / 10.0f;
+ 
+                    // windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 1.0f);
+                    // windFinal = windInitial;
+                    // windInitial = UnityEngine.Random.Range(0, 6) / 10.0f;
+ 
+                    //calculate how long since the windSteppingStartTime was
+                    windSteppingProgress = (Planetarium.GetUniversalTime() - windSteppingStartTime);
+                    if (windSteppingProgress > windSteppingDuration)
+                    {
+                        //if we have been moving for longer than the duration
+                        windSteppingStartTime = Planetarium.GetUniversalTime();                     //store the current game time
+                        windSteppingProgress = 0;                                                                                                       //reset this
+                        windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
+                        windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
+                        windSteppingDuration = UnityEngine.Random.Range(20, 50);
+                    }
+                    //Calc the new Force value based on how far from 0 to duration we have gone
+                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
                 }
             }
             else
@@ -297,11 +322,22 @@ namespace KsWeather
                 {
                     windMinimum = 3.0f;
                     windMaximum = 15.0f;
-                    windInitial = UnityEngine.Random.Range(0, 6) / 10.0f;
-                    windFinal = UnityEngine.Random.Range(0, 6) / 10.0f;
-                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 1.0f);
+                    windSteppingProgress = (Planetarium.GetUniversalTime() - windSteppingStartTime);
+
+                    if (windSteppingProgress > windSteppingDuration)
+                    {
+                        //if we have been moving for longer than the duration
+                        windSteppingStartTime = Planetarium.GetUniversalTime();                     //store the current game time
+                        windSteppingProgress = 0;                                                                                                       //reset this
+                        windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
+                        windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
+                        windSteppingDuration = UnityEngine.Random.Range(20, 50);
+                    }
+                    //Calc the new Force value based on how far from 0 to duration we have gone
+                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
                 }
             }
+        
         }
 
         public void Save(ConfigNode node)
