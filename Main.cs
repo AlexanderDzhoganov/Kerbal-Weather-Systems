@@ -287,7 +287,7 @@ namespace KsWeather
         public void windStuff()
         {
 
-
+            
             if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
             {
                 windMinimum = 0.0f;
@@ -331,7 +331,7 @@ namespace KsWeather
                         windSteppingProgress = 0;                                                                                                       //reset this
                         windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
                         windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = 50;
+                        windSteppingDuration = 1;
                     }
                     //Calc the new Force value based on how far from 0 to duration we have gone
                     windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
@@ -401,9 +401,15 @@ namespace KsWeather
             {
                 windForce = 0;
             }
+
+            if (GUI.Button(new Rect(490, 100, 150, 25), "Wind Direction"))
+            {
+                windDirectionNumb = UnityEngine.Random.Range(1, 9);
+            }
+
             if (windActive == false)
             {
-                if (GUI.Button(new Rect(500, 100, 100, 25), "Automatic Wind"))
+                if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind"))
                 {
                     if (windActive == true)
                     {
@@ -417,7 +423,7 @@ namespace KsWeather
             }
             else
             {
-                if (GUI.Button(new Rect(500, 100, 100, 25), "Manual Wind"))
+                if (GUI.Button(new Rect(10, 140, 120, 25), "Manual Wind"))
                 {
                     if (windActive == true)
                     {
@@ -428,6 +434,11 @@ namespace KsWeather
                         windActive = true;
                     }
                 }
+            }
+
+            if (GUI.Button(new Rect(10, 200, 150, 25), "Wind Direction"))
+            {
+                windDirectionNumb = UnityEngine.Random.Range(1, 9);
             }
 
             if (Pressure != 0)
