@@ -136,11 +136,13 @@ namespace KsWeather
                         }
                         foreach (Part p in vessel.parts)
                         {
-                            
+
                             if (DrakeCome == true)
                             {
                                 p.rigidbody.AddExplosionForce(100, windDirection, 10);
                             }
+                            if (p.rigidbody == null) continue; 
+
                             var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
                             landDrag = ((float)(coeff * p.rigidbody.mass));
                             windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.GetSrfVelocity().magnitude);
@@ -220,8 +222,8 @@ namespace KsWeather
                         break;
                 }
             }
-            else
-
+            else if (FlightGlobals.ActiveVessel.Landed)
+            {
                 switch (windDirectionNumb)
                 {
                     case 1:
@@ -276,6 +278,64 @@ namespace KsWeather
                         windDirectionLabel = "N/a";
                         break;
                 }
+            }
+                
+            else if (FlightGlobals.ActiveVessel.Splashed)
+                switch (windDirectionNumb)
+                {
+                    case 1:
+                        windDirectionLabel = "North";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * (landDrag * 1000);
+                        windDirection.z = 0;
+                        break;
+                    case 2:
+                        windDirectionLabel = "East";
+                        windDirection.x = 0;
+                        windDirection.y = 0;
+                        windDirection.z = -windForce * (landDrag * 1000);
+                        break;
+                    case 3:
+                        windDirectionLabel = "South";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * (landDrag * 1000);
+                        windDirection.z = 0;
+                        break;
+                    case 4:
+                        windDirectionLabel = "West";
+                        windDirection.x = 0;
+                        windDirection.y = 0;
+                        windDirection.z = windForce * (landDrag * 1000);
+                        break;
+                    case 5:
+                        windDirectionLabel = "North East";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * (landDrag * 1000);
+                        windDirection.z = -windForce * (landDrag * 1000);
+                        break;
+                    case 6:
+                        windDirectionLabel = "South East";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * (landDrag * 1000);
+                        windDirection.z = -windForce * (landDrag * 1000);
+                        break;
+                    case 7:
+                        windDirectionLabel = "South West";
+                        windDirection.x = 0;
+                        windDirection.y = -windForce * (landDrag * 1000);
+                        windDirection.z = windForce * (landDrag * 1000);
+                        break;
+                    case 8:
+                        windDirectionLabel = "North West";
+                        windDirection.x = 0;
+                        windDirection.y = windForce * (landDrag * 1000);
+                        windDirection.z = windForce * (landDrag * 1000);
+                        break;
+                    default:
+                        windDirectionLabel = "N/a";
+                        break;
+                }
+
 
         }
 
@@ -310,7 +370,7 @@ namespace KsWeather
                         windSteppingProgress = 0;                                                                                                       //reset this
                         windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
                         windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = 1;
+                        windSteppingDuration = 2;
                     }
                     //Calc the new Force value based on how far from 0 to duration we have gone
                     windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
@@ -331,7 +391,7 @@ namespace KsWeather
                         windSteppingProgress = 0;                                                                                                       //reset this
                         windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
                         windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = 1;
+                        windSteppingDuration = 2;
                     }
                     //Calc the new Force value based on how far from 0 to duration we have gone
                     windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
@@ -473,7 +533,6 @@ namespace KsWeather
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
                     GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.0000"));
                     GUILayout.Label("Wind Direction: " + windDirectionLabel);
-                    GUILayout.Label("GForce Warning! 'Here Drakey Drakey~");
                     GUILayout.EndVertical();
                     GUILayout.EndHorizontal();
                     GUI.DragWindow();
