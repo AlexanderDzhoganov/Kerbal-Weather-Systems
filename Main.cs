@@ -9,6 +9,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 using KSP.IO;
+//using ferram4;
 using Kethane;
 using KsWeather.Extensions;
 
@@ -39,6 +40,7 @@ namespace KsWeather
         public double HighestPressure = FlightGlobals.getStaticPressure(0);
         public bool windSpeedActive = true;
 
+
         private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KsWeather/Plugins/KsWeatherConfig.cfg"; } }
         /*
         * use the Awake() method instead of the constructor for initializing data because Unity uses
@@ -57,19 +59,19 @@ namespace KsWeather
             UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks;
             RenderingManager.AddToPostDrawQueue(0, OnDraw);
             windDirectionNumb = UnityEngine.Random.Range(1, 9);
-
+            
             InvokeRepeating("windStuff", 1, 1);
             windSteppingStartTime = -100;    //-100 so it will reset on first run
             windSteppingDuration = 5.0; //wind step duration
 
         }
-
+        
         /*
 * Called next.
 */
         void Start()
         {
-
+            
         }
 
         /*
@@ -79,6 +81,7 @@ namespace KsWeather
         {
 
         }
+
 
         /*
 * Called at a fixed time interval determined by the physics time step.
@@ -91,32 +94,7 @@ namespace KsWeather
 
 
             if (!HighLogic.LoadedSceneIsFlight)
-                return;
-
-
-
-            if (GForce <= 4)
-            {
-                DrakeCome = false;
-                DrakeWarning = false;
-            }
-            else if (GForce > 4 && GForce < 7)
-            {
-                DrakeWarning = true;
-                DrakeCome = false;
-            }
-            else if (GForce >= 7)
-            {
-                DrakeWarning = false;
-                DrakeCome = true;
-            }
-            else
-            {
-                DrakeCome = false;
-                DrakeWarning = false;
-            }
-
-            
+                return;   
 
 
             if (windForce != 0.0f)
@@ -149,7 +127,7 @@ namespace KsWeather
 
                             //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
                             p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
-
+                            //p.rigidbody.AddForceAtPosition(windForce, GetCoD());
 
                         }
                         //Part testPart = vessel.parts[0];
@@ -495,6 +473,8 @@ namespace KsWeather
                     }
                 }
             }
+
+            
 
             if (Pressure != 0)
             {
