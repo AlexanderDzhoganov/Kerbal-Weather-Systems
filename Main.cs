@@ -462,7 +462,7 @@ namespace KsWeather
                 windForce = 0;
             }
 
-            if (GUI.Button(new Rect(490, 100, 150, 25), "Wind Direction"))
+            if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct."))
             {
                 windDirectionNumb = UnityEngine.Random.Range(1, 9);
             }
