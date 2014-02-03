@@ -503,8 +503,7 @@ namespace KsWeather
 
             if (Pressure != 0)
             {
-                if (DrakeWarning == false && DrakeCome == false)
-                {
+              
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
                     GUILayout.Label("Windspeed: " + (windForce * 10).ToString("0.00") + " kernauts");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
@@ -519,31 +518,6 @@ namespace KsWeather
                     GUILayout.EndVertical();
                     GUILayout.EndHorizontal();
                     GUI.DragWindow();
-                }
-                else if (DrakeWarning == true)
-                {
-                    GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Windspeed: " + (windForce * 10).ToString("0.00") + " kernauts");
-                    GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                    GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                    GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
-                    GUILayout.Label("InAtmo? : True");
-                    GUILayout.EndHorizontal();
-                    GUILayout.BeginVertical(GUILayout.Height(100));
-                    GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.0000"));
-                    GUILayout.Label("Wind Direction: " + windDirectionLabel);
-                    GUILayout.EndVertical();
-                    GUILayout.EndHorizontal();
-                    GUI.DragWindow();
-                }
-                else if (DrakeCome == true)
-                {
-                    GUILayout.BeginHorizontal(GUILayout.Width(150));
-                    GUILayout.Label("Good Boy~");
-                    GUILayout.EndHorizontal();
-                    GUI.DragWindow();
-                }
 
 
             }
