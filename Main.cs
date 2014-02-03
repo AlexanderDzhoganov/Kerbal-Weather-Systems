@@ -26,11 +26,11 @@ namespace KsWeather
         public float windFinal = 0.0f;
         public Vector3 windDirection;
         public Vector3 windDrag;
+        public Vector3 partDrag;
         public float landDrag;
         public double GForce;
         public bool DrakeWarning = false;
         public bool DrakeCome = false;
-        public double partDrag = 0.0;
         public float vesselDrag = 0.0f;
         public double vesselHeight = 0;
         public int windDirectionNumb;
@@ -114,24 +114,32 @@ namespace KsWeather
                         }
                         foreach (Part p in vessel.parts)
                         {
-                            if(p.mass >= 0.01)
+
+                            
+                            if (p.rigidbody != null)
                             {
-                                if (p.rigidbody != null)
-                                {
-                                    var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
-                                    landDrag = ((float)(coeff * p.rigidbody.mass));
-                                    windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.GetSrfVelocity().magnitude);
+                                    if (p.rigidbody.angularDrag != 0)
+                                    {
+                                        var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
+                                        landDrag = ((float)(coeff * p.rigidbody.mass));
+                                        partDrag = (p.surfaceAreas) + (windDrag);
+                                        windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.GetSrfVelocity().magnitude);
 
-                                    //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
-                                    //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
-                                    p.rigidbody.AddForceAtPosition(windDirection, p.rigidbody.centerOfMass);
-                                }
+                                        //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
+                                        //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
+                                        p.rigidbody.AddForceAtPosition(windDirection, p.rigidbody.centerOfMass);
+
+                                    }
+                                        
                             }
-                            
-
-                            
-
                         }
+                            
+                            
+                            
+
+                            
+
+                        
                         //Part testPart = vessel.parts[0];
                         //testPart.rigidbody.AddForce(forceDirection * windForce);
                     }
@@ -266,50 +274,50 @@ namespace KsWeather
                     case 1:
                         windDirectionLabel = "North";
                         windDirection.x = 0;
-                        windDirection.y = windForce * (landDrag * 10);
+                        windDirection.y = windForce * (vesselDrag / 20);
                         windDirection.z = 0;
                         break;
                     case 2:
                         windDirectionLabel = "East";
                         windDirection.x = 0;
                         windDirection.y = 0;
-                        windDirection.z = -windForce * (landDrag * 10);
+                        windDirection.z = -windForce * (vesselDrag / 20);
                         break;
                     case 3:
                         windDirectionLabel = "South";
                         windDirection.x = 0;
-                        windDirection.y = -windForce * (landDrag * 10);
+                        windDirection.y = -windForce * (vesselDrag / 20);
                         windDirection.z = 0;
                         break;
                     case 4:
                         windDirectionLabel = "West";
                         windDirection.x = 0;
                         windDirection.y = 0;
-                        windDirection.z = windForce * (landDrag * 10);
+                        windDirection.z = windForce * (vesselDrag / 20);
                         break;
                     case 5:
                         windDirectionLabel = "North East";
                         windDirection.x = 0;
-                        windDirection.y = windForce * (landDrag * 10);
-                        windDirection.z = -windForce * (landDrag * 10);
+                        windDirection.y = windForce * (vesselDrag / 20);
+                        windDirection.z = -windForce * (vesselDrag / 20);
                         break;
                     case 6:
                         windDirectionLabel = "South East";
                         windDirection.x = 0;
-                        windDirection.y = -windForce * (landDrag * 10);
-                        windDirection.z = -windForce * (landDrag * 10);
+                        windDirection.y = -windForce * (vesselDrag / 20);
+                        windDirection.z = -windForce * (vesselDrag / 20);
                         break;
                     case 7:
                         windDirectionLabel = "South West";
                         windDirection.x = 0;
-                        windDirection.y = -windForce * (landDrag * 10);
-                        windDirection.z = windForce * (landDrag * 10);
+                        windDirection.y = -windForce * (vesselDrag / 20);
+                        windDirection.z = windForce * (vesselDrag / 20);
                         break;
                     case 8:
                         windDirectionLabel = "North West";
                         windDirection.x = 0;
-                        windDirection.y = windForce * (landDrag * 10);
-                        windDirection.z = windForce * (landDrag * 10);
+                        windDirection.y = windForce * (vesselDrag / 20);
+                        windDirection.z = windForce * (vesselDrag / 20);
                         break;
                     default:
                         windDirectionLabel = "N/a";
