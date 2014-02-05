@@ -159,50 +159,50 @@ namespace KsWeather
                 case 1:
                     windDirectionLabel = "South";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 20);
+                    windDirection.y = windForce * (vesselDrag / 50);
                     windDirection.z = 0;
                     break;
                 case 2:
                     windDirectionLabel = "West";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = -windForce * (vesselDrag / 20);
+                    windDirection.z = -windForce * (vesselDrag / 50);
                     break;
                 case 3:
                     windDirectionLabel = "North";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 20);
+                    windDirection.y = -windForce * (vesselDrag / 50);
                     windDirection.z = 0;
                     break;
                 case 4:
                     windDirectionLabel = "East";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = windForce * (vesselDrag / 20);
+                    windDirection.z = windForce * (vesselDrag / 50);
                     break;
                 case 5:
                     windDirectionLabel = "South West";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 20);
-                    windDirection.z = -windForce * (vesselDrag / 20);
+                    windDirection.y = windForce * (vesselDrag / 50);
+                    windDirection.z = -windForce * (vesselDrag / 50);
                     break;
                 case 6:
                     windDirectionLabel = "North West";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 20);
-                    windDirection.z = -windForce * (vesselDrag / 20);
+                    windDirection.y = -windForce * (vesselDrag / 50);
+                    windDirection.z = -windForce * (vesselDrag / 50);
                     break;
                 case 7:
                     windDirectionLabel = "North East";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 20);
-                    windDirection.z = windForce * (vesselDrag / 20);
+                    windDirection.y = -windForce * (vesselDrag / 50);
+                    windDirection.z = windForce * (vesselDrag / 50);
                     break;
                 case 8:
                     windDirectionLabel = "South East";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 20);
-                    windDirection.z = windForce * (vesselDrag / 20);
+                    windDirection.y = windForce * (vesselDrag / 50);
+                    windDirection.z = windForce * (vesselDrag / 50);
                     break;
                 default:
                     windDirectionLabel = "N/a";
@@ -242,7 +242,7 @@ namespace KsWeather
                         windSteppingProgress = 0;                                                                                                       //reset this
                         windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
                         windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = 3;
+                        windSteppingDuration = 10;
                     }
                     //Calc the new Force value based on how far from 0 to duration we have gone
                     windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
@@ -263,7 +263,7 @@ namespace KsWeather
                         windSteppingProgress = 0;                                                                                                       //reset this
                         windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
                         windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = 3;
+                        windSteppingDuration = 10;
                     }
                     //Calc the new Force value based on how far from 0 to duration we have gone
                     windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
