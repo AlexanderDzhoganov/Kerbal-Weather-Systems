@@ -95,7 +95,7 @@ namespace KsWeather
 
             if (!HighLogic.LoadedSceneIsFlight)
                 return;   
-
+              Vector3 worldUp = FlightGlobals.getUpAxis(position);
 
             if (windForce != 0.0f)
             {
