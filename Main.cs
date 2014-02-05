@@ -1,6 +1,7 @@
 //Honourable Mentions and contributions to the code:
 //Cilph (he's an ass about it sometimes), TriggerAu (for helping me with a bunch of functionalities),
 //DYJ, Scott Manley, taniwha, Majiir (for kethane co-op and lots of coding help), and many more!
+//And very much thanks for Chris_W for bugtesting intensively and helping out with the code bunches~
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace KsWeather
     public class KsMain : MonoBehaviour
     {
         private static Rect _windowPosition = new Rect();
+        private Mesh mesh;
         public float windForce = 0.0f;
         public float windMinimum = 0.0f;
         public float windMaximum = 3.0f;
@@ -40,7 +42,7 @@ namespace KsWeather
         public double HighestPressure = FlightGlobals.getStaticPressure(0);
         public bool windSpeedActive = true;
 
-
+        
         private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KsWeather/Plugins/KsWeatherConfig.cfg"; } }
         /*
         * use the Awake() method instead of the constructor for initializing data because Unity uses
@@ -63,7 +65,7 @@ namespace KsWeather
             InvokeRepeating("windStuff", 1, 1);
             windSteppingStartTime = -100;    //-100 so it will reset on first run
             windSteppingDuration = 5.0; //wind step duration
-
+            mesh = gameObject.AddComponent<MeshFilter>().mesh;
         }
         
         /*
@@ -82,7 +84,10 @@ namespace KsWeather
 
         }
 
+        private void setUpMesh()
+        {
 
+        }
         /*
 * Called at a fixed time interval determined by the physics time step.
 */
@@ -91,17 +96,17 @@ namespace KsWeather
             Pressure = FlightGlobals.ActiveVessel.staticPressure;
             HighestPressure = FlightGlobals.getStaticPressure(0);
             GForce = FlightGlobals.ActiveVessel.geeForce;
-
+            Vector3d position = FlightGlobals.ActiveVessel.GetWorldPos3D();
 
             if (!HighLogic.LoadedSceneIsFlight)
                 return;   
-              Vector3 worldUp = FlightGlobals.getUpAxis(position);
+            Vector3 worldUp = FlightGlobals.getUpAxis(position);
 
             if (windForce != 0.0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
 
-
+                
                 if (vessel != null)
                 {
 
@@ -152,49 +157,49 @@ namespace KsWeather
             switch (windDirectionNumb)
             {
                 case 1:
-                    windDirectionLabel = "North";
+                    windDirectionLabel = "South";
                     windDirection.x = 0;
                     windDirection.y = windForce * (vesselDrag / 20);
                     windDirection.z = 0;
                     break;
                 case 2:
-                    windDirectionLabel = "East";
+                    windDirectionLabel = "West";
                     windDirection.x = 0;
                     windDirection.y = 0;
                     windDirection.z = -windForce * (vesselDrag / 20);
                     break;
                 case 3:
-                    windDirectionLabel = "South";
+                    windDirectionLabel = "North";
                     windDirection.x = 0;
                     windDirection.y = -windForce * (vesselDrag / 20);
                     windDirection.z = 0;
                     break;
                 case 4:
-                    windDirectionLabel = "West";
+                    windDirectionLabel = "East";
                     windDirection.x = 0;
                     windDirection.y = 0;
                     windDirection.z = windForce * (vesselDrag / 20);
                     break;
                 case 5:
-                    windDirectionLabel = "North East";
+                    windDirectionLabel = "South West";
                     windDirection.x = 0;
                     windDirection.y = windForce * (vesselDrag / 20);
                     windDirection.z = -windForce * (vesselDrag / 20);
                     break;
                 case 6:
-                    windDirectionLabel = "South East";
+                    windDirectionLabel = "North West";
                     windDirection.x = 0;
                     windDirection.y = -windForce * (vesselDrag / 20);
                     windDirection.z = -windForce * (vesselDrag / 20);
                     break;
                 case 7:
-                    windDirectionLabel = "South West";
+                    windDirectionLabel = "North East";
                     windDirection.x = 0;
                     windDirection.y = -windForce * (vesselDrag / 20);
                     windDirection.z = windForce * (vesselDrag / 20);
                     break;
                 case 8:
-                    windDirectionLabel = "North West";
+                    windDirectionLabel = "South East";
                     windDirection.x = 0;
                     windDirection.y = windForce * (vesselDrag / 20);
                     windDirection.z = windForce * (vesselDrag / 20);
