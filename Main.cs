@@ -134,7 +134,7 @@ namespace KsWeather
 
                                     //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
                                     //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
-                                    p.rigidbody.AddForceAtPosition(windDirection, p.rigidbody.centerOfMass);
+                                    p.rigidbody.AddForceAtPosition(windDirection, vessel.CoM);
 
                                 }
                             }
