@@ -321,7 +321,6 @@ namespace KsWeather
                     GUILayout.EndHorizontal();
                     GUILayout.BeginVertical(GUILayout.Height(100));
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.00000000"));
                     GUILayout.Label("Wind Direction: " + windDirectionLabel);
                     GUILayout.EndVertical();
                     GUILayout.EndHorizontal();
@@ -340,7 +339,6 @@ namespace KsWeather
                 GUILayout.EndHorizontal();
                 GUILayout.BeginVertical(GUILayout.Height(50));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.00000000"));
                 GUILayout.Label("Wind Direction: N/a");
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
