@@ -1,6 +1,7 @@
 //Honourable Mentions and contributions to the code:
 //Cilph (he's an ass about it sometimes), TriggerAu (for helping me with a bunch of functionalities),
-//DYJ, Scott Manley, taniwha, Majiir (for kethane co-op and lots of coding help), and many more!
+//DYJ, Scott Manley, taniwha, Majiir (for kethane co-op and lots of coding help), 
+//Ippo and Ferram for use of FARWIND code and API, as well as helping with coding.
 //And very much thanks for Chris_W for bugtesting intensively and helping out with the code bunches~
 
 using System;
@@ -10,7 +11,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 using KSP.IO;
-//using ferram4;
+using ferram4;
 using KsWeather.Extensions;
 
 namespace KsWeather
@@ -18,27 +19,35 @@ namespace KsWeather
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class KsMain : MonoBehaviour
     {
+        //Private variables
         private static Rect _windowPosition = new Rect();
-        public float windForce = 0.0f;
-        public float windMinimum = 0.0f;
-        public float windMaximum = 3.0f;
-        public float windInitial = 0.0f;
-        public float windFinal = 0.0f;
-        public Vector3 windDirection;
-        public Vector3 partDrag;
-        public Vector3 force; 
-        public float landDrag;
-        public double GForce;
-        public bool DrakeWarning = false;
-        public bool DrakeCome = false;
-        public float vesselDrag = 0.0f;
-        public double vesselHeight = 0;
+
+
+        //Public variables
+
+        //Boolean Variables
+        public bool isWindAutomatic = true; //Value for automatic wind speed
+
+        //Integers
         public int windDirectionNumb;
-        public String windDirectionLabel;
-        public bool windActive = true;
+
+        //Singles
+
+        //Doubles
         double Pressure = FlightGlobals.ActiveVessel.staticPressure;
         public double HighestPressure = FlightGlobals.getStaticPressure(0);
-        public bool windSpeedActive = true;
+        public double GForce;
+        public double vesselHeight = 0;
+
+        //Floating point numbers
+        public float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
+
+        //Vectors
+        public Vector3 windDirection;
+        
+        //Strings
+        public String windDirectionLabel;
+        
 
         
         private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KsWeather/Plugins/KsWeatherConfig.cfg"; } }
@@ -56,13 +65,13 @@ namespace KsWeather
 */
         void Awake()
         {
-            UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks;
-            RenderingManager.AddToPostDrawQueue(0, OnDraw);
-            windDirectionNumb = UnityEngine.Random.Range(1, 9);
-            
-            InvokeRepeating("windStuff", 1, 1);
-            windSteppingStartTime = -100;    //-100 so it will reset on first run
-            windSteppingDuration = 5.0; //wind step duration
+            UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
+            RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
+            windDirectionNumb = UnityEngine.Random.Range(1, 9); //Set wind direction
+
+            Debug.Log("WIND: setting wind function"); //Write to debug
+            FARWind.SetWindFunction(windStuff); //Set the WindFunction to the windStuff Function
+
         }
         
         /*
@@ -90,27 +99,20 @@ namespace KsWeather
             Pressure = FlightGlobals.ActiveVessel.staticPressure;
             HighestPressure = FlightGlobals.getStaticPressure(0);
             GForce = FlightGlobals.ActiveVessel.geeForce;
-            Vector3d position = FlightGlobals.ActiveVessel.GetWorldPos3D();
 
             if (!HighLogic.LoadedSceneIsFlight)
                 return;   
-            Vector3 worldUp = FlightGlobals.getUpAxis(position);
 
-            if (windForce != 0.0f)
+            if (windSpeed != 0.0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
-
                 
                 if (vessel != null)
                 {
 
                     if (vessel.parts.Count > 0)
                     {
-                        vesselDrag = (force.magnitude * windForce);
-                        if (windForce == 0)
-                        {
-                            //vesselDrag = 0;
-                        }
+                        
                         foreach (Part p in vessel.parts)
                         {
 
@@ -119,18 +121,8 @@ namespace KsWeather
                                 
                                     if (p.physicalSignificance != Part.PhysicalSignificance.NONE)
                                     {
-                                        Vector3 upVector = p.transform.up;
-                                        Vector3 perp = Vector3.Cross(upVector, vessel.srf_velocity).normalized;
-                                        Vector3 liftDir = Vector3.Cross(vessel.srf_velocity, perp).normalized;
 
-                                        var rho = vessel.atmDensity;
-                                        var coeff = -0.5f * rho * vessel.srf_velocity.sqrMagnitude * p.surfaceAreas.sqrMagnitude;
-                                        //Vector3 combined = p.vessel.CoM * p.vessel.CoL
-                                        Vector3 D = -vessel.srf_velocity.normalized * coeff;
-                                        force = (D) * 0.01f;
-                                        //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
                                         //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
-                                        p.rigidbody.AddForceAtPosition(force, vessel.CoM);
 
                                     }
                             }
@@ -141,129 +133,88 @@ namespace KsWeather
                     }
                     else
                     {
-                        //Debug.Log("FSweatherSystem: activeVessel parts count is < 0");
+                        //Debug.Log("KSweatherSystem: activeVessel parts count is < 0");
                     }
                 }
                 else
                 {
-                    //Debug.Log("FSweatherSystem: activeVessel is null");
+                    //Debug.Log("KSweatherSystem: activeVessel is null");
                 }
             }
 
+            //Does the defining of the wind direction
             switch (windDirectionNumb)
             {
                 case 1:
                     windDirectionLabel = "South";
                     windDirection.x = 0;
-                    windDirection.y = force.magnitude;
+                    windDirection.y = windSpeed;
                     windDirection.z = 0;
                     break;
                 case 2:
                     windDirectionLabel = "West";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = -force.magnitude;
+                    windDirection.z = -windSpeed;
                     break;
                 case 3:
                     windDirectionLabel = "North";
                     windDirection.x = 0;
-                    windDirection.y = -force.magnitude;
+                    windDirection.y = -windSpeed;
                     windDirection.z = 0;
                     break;
                 case 4:
                     windDirectionLabel = "East";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = force.magnitude;
+                    windDirection.z = windSpeed;
                     break;
                 case 5:
                     windDirectionLabel = "South West";
                     windDirection.x = 0;
-                    windDirection.y = force.magnitude;
-                    windDirection.z = -force.magnitude;
+                    windDirection.y = windSpeed;
+                    windDirection.z = -windSpeed;
                     break;
                 case 6:
                     windDirectionLabel = "North West";
                     windDirection.x = 0;
-                    windDirection.y = -force.magnitude;
-                    windDirection.z = -force.magnitude;
+                    windDirection.y = -windSpeed;
+                    windDirection.z = -windSpeed;
                     break;
                 case 7:
                     windDirectionLabel = "North East";
                     windDirection.x = 0;
-                    windDirection.y = -force.magnitude;
-                    windDirection.z = force.magnitude;
+                    windDirection.y = -windSpeed;
+                    windDirection.z = windSpeed;
                     break;
                 case 8:
                     windDirectionLabel = "South East";
                     windDirection.x = 0;
-                    windDirection.y = force.magnitude;
-                    windDirection.z = force.magnitude;
+                    windDirection.y = windSpeed;
+                    windDirection.z = windSpeed;
                     break;
                 default:
                     windDirectionLabel = "N/a";
+                    windDirection.Zero(); //Zeroes the wind direction vector?
                     break;
             }
 
         }
-
-        //*
-        Double windSteppingStartTime = -100;    //-100 so it will reset on first run
-        Double windSteppingDuration = 5.0; //wind step duration
-        Double windSteppingProgress;
-
-        public void windStuff()
+        
+        //Do ALL the wind things!
+        public Vector3 windStuff(CelestialBody body, Part part, Vector3 position)
         {
 
-            
-            if (Pressure > HighestPressure * 0.7 || Pressure < HighestPressure * 0.3)
+            try
             {
-                windMinimum = 0.0f;
-                windMaximum = 6.0f;
- 
-                //windFinal = UnityEngine.Random.Range(0, 6) / 10.0f;
-                if (windActive == false)
-                {
- 
-                    // windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, 1.0f);
-                    // windFinal = windInitial;
-                    // windInitial = UnityEngine.Random.Range(0, 6) / 10.0f;
- 
-                    //calculate how long since the windSteppingStartTime was
-                    windSteppingProgress = (Planetarium.GetUniversalTime() - windSteppingStartTime);
-                    if (windSteppingProgress > windSteppingDuration)
-                    {
-                        //if we have been moving for longer than the duration
-                        windSteppingStartTime = Planetarium.GetUniversalTime();                     //store the current game time
-                        windSteppingProgress = 0;                                                                                                       //reset this
-                        windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
-                        windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = 10;
-                    }
-                    //Calc the new Force value based on how far from 0 to duration we have gone
-                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
-                }
+                return windDirection; //return the windDirection vector stuff
             }
-            else
-            {
-                if (windActive == false)
-                {
-                    windMinimum = 3.0f;
-                    windMaximum = 15.0f;
-                    windSteppingProgress = (Planetarium.GetUniversalTime() - windSteppingStartTime);
 
-                    if (windSteppingProgress > windSteppingDuration)
-                    {
-                        //if we have been moving for longer than the duration
-                        windSteppingStartTime = Planetarium.GetUniversalTime();                     //store the current game time
-                        windSteppingProgress = 0;                                                                                                       //reset this
-                        windInitial = windFinal;                                                    //Set the initial value to be whatever the final value was
-                        windFinal = UnityEngine.Random.Range(windMinimum, windMaximum) / 10.0f;     //generate a new windFinal Value
-                        windSteppingDuration = 10;
-                    }
-                    //Calc the new Force value based on how far from 0 to duration we have gone
-                    windForce = UnityEngine.Mathf.SmoothStep(windInitial, windFinal, (float)(windSteppingProgress / windSteppingDuration));
-                }
+            catch (Exception e)
+            {
+                Debug.Log("[KsWeather] Exception! " + e.Message + e.StackTrace);
+
+                return Vector3.zero;
             }
         
         }
@@ -282,70 +233,62 @@ namespace KsWeather
             _windowPosition = config.GetValue<Rect>("Window Position");
         }
 
-        private void OnDraw()
+        //Called when the drawing happens
+        private void OnDraw() 
         {
 
             double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude);
 
-            if (Pressure != 0)
-            {
-                windSpeedActive = true;
-
-            }
-            else
-            {
-
-                windSpeedActive = false;
-            }
-
         }
 
+        //Called when the GUI things happen
         void OnGUI()
         {
             _windowPosition = GUILayout.Window(10, _windowPosition, OnWindow, "Weather~");
 
         }
 
-        // Called when the GUI is loaded?
+        // Called when the GUI window things happen
         void OnWindow(int windowId)
         {
-            double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude);
-            double HighestPressure = FlightGlobals.getStaticPressure(0.0);
-            vesselHeight = FlightGlobals.ship_altitude;
-            if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up"))
+            double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude); //gets the current pressure of the atmo the ship is in
+            double HighestPressure = FlightGlobals.getStaticPressure(0.0); //gets the highest pressure of the body the ship is in the SOI of
+            vesselHeight = FlightGlobals.ship_altitude; //sets the vessel height as the altitude of the ship
+
+            if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
             {
-                windForce += 0.1f;
+                windSpeed += 0.1f;
             }
-            if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down"))
+            if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
             {
-                if (windForce > 0)
+                if (windSpeed > 0) //makes sure that you cant have negative windspeed
                 {
-                    windForce -= 0.1f;
+                    windSpeed -= 0.1f;
                 }
                 else
-                    windForce -= 0.0f;
+                    windSpeed -= 0.0f;
             }
-            if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero"))
+            if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
             {
-                windForce = 0;
+                windSpeed = 0;
             }
 
-            if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct."))
+            if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
             {
                 windDirectionNumb = UnityEngine.Random.Range(1, 9);
             }
 
-            if (windActive == false)
+            if (isWindAutomatic == false)
             {
-                if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind"))
+                if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
                 {
-                    if (windActive == true)
+                    if (isWindAutomatic == true)
                     {
-                        windActive = false;
+                       isWindAutomatic = false;
                     }
-                    else if (windActive == false)
+                    else if (isWindAutomatic == false)
                     {
-                        windActive = true;
+                        isWindAutomatic = true;
                     }
                 }
             }
@@ -353,24 +296,24 @@ namespace KsWeather
             {
                 if (GUI.Button(new Rect(10, 140, 120, 25), "Manual Wind"))
                 {
-                    if (windActive == true)
+                    if (isWindAutomatic == true)
                     {
-                        windActive = false;
+                        isWindAutomatic = false;
                     }
-                    else if (windActive == false)
+                    else if (isWindAutomatic == false)
                     {
-                        windActive = true;
+                        isWindAutomatic= true;
                     }
                 }
             }
 
             
 
-            if (Pressure != 0)
+            if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
             {
               
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Windspeed: " + (windForce * 10).ToString("0.00") + " kernauts");
+                    GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                     GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
@@ -386,7 +329,7 @@ namespace KsWeather
 
 
             }
-            else
+            else //if we are not in an atmosphere, show the non atmo GUI
             {
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
                 GUILayout.Label("Windspeed: " + "0" + " kernauts");
