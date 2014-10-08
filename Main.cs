@@ -11,7 +11,6 @@ using System.Reflection;
 using UnityEngine;
 using KSP.IO;
 //using ferram4;
-using Kethane;
 using KsWeather.Extensions;
 
 namespace KsWeather
@@ -20,15 +19,14 @@ namespace KsWeather
     public class KsMain : MonoBehaviour
     {
         private static Rect _windowPosition = new Rect();
-        private Mesh mesh;
         public float windForce = 0.0f;
         public float windMinimum = 0.0f;
         public float windMaximum = 3.0f;
         public float windInitial = 0.0f;
         public float windFinal = 0.0f;
         public Vector3 windDirection;
-        public Vector3 windDrag;
         public Vector3 partDrag;
+        public Vector3 force; 
         public float landDrag;
         public double GForce;
         public bool DrakeWarning = false;
@@ -50,7 +48,7 @@ namespace KsWeather
         */
         public void KSMain()
         {
-            Cell cell = new Cell();
+
         }
 
         /*
@@ -65,7 +63,6 @@ namespace KsWeather
             InvokeRepeating("windStuff", 1, 1);
             windSteppingStartTime = -100;    //-100 so it will reset on first run
             windSteppingDuration = 5.0; //wind step duration
-            mesh = gameObject.AddComponent<MeshFilter>().mesh;
         }
         
         /*
@@ -84,10 +81,7 @@ namespace KsWeather
 
         }
 
-        private void setUpMesh()
-        {
-
-        }
+        
         /*
 * Called at a fixed time interval determined by the physics time step.
 */
@@ -112,7 +106,7 @@ namespace KsWeather
 
                     if (vessel.parts.Count > 0)
                     {
-                        vesselDrag = (windDrag.magnitude * windForce) / 100;
+                        vesselDrag = (force.magnitude * windForce);
                         if (windForce == 0)
                         {
                             //vesselDrag = 0;
@@ -122,21 +116,23 @@ namespace KsWeather
 
                             if (p.rigidbody != null)
                             {
-                                if(p.physicalSignificance != Part.PhysicalSignificance.NONE)
-                                {
+                                
+                                    if (p.physicalSignificance != Part.PhysicalSignificance.NONE)
+                                    {
+                                        Vector3 upVector = p.transform.up;
+                                        Vector3 perp = Vector3.Cross(upVector, vessel.srf_velocity).normalized;
+                                        Vector3 liftDir = Vector3.Cross(vessel.srf_velocity, perp).normalized;
 
+                                        var rho = vessel.atmDensity;
+                                        var coeff = -0.5f * rho * vessel.srf_velocity.sqrMagnitude * p.surfaceAreas.sqrMagnitude;
+                                        //Vector3 combined = p.vessel.CoM * p.vessel.CoL
+                                        Vector3 D = -vessel.srf_velocity.normalized * coeff;
+                                        force = (D) * 0.01f;
+                                        //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
+                                        //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
+                                        p.rigidbody.AddForceAtPosition(force, vessel.CoM);
 
-                                    var coeff = -0.5f * p.maximum_drag * vessel.atmDensity * FlightGlobals.DragMultiplier;
-                                    landDrag = ((float)(coeff * p.rigidbody.mass));
-                                    partDrag = (p.surfaceAreas) + (windDrag);
-                                    //Vector3 combined = p.vessel.CoM * p.vessel.CoL
-                                    windDrag = (coeff * p.rigidbody.mass * vessel.srf_velocity * vessel.GetSrfVelocity().magnitude);
-
-                                    //VesselDrag = srfvel - windvel, then (goal*goal.magnitude - srfvel*srfvel.magnitude)
-                                    //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
-                                    p.rigidbody.AddForceAtPosition(windDirection, vessel.CoM);
-
-                                }
+                                    }
                             }
                         }
                         
@@ -159,50 +155,50 @@ namespace KsWeather
                 case 1:
                     windDirectionLabel = "South";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 50);
+                    windDirection.y = force.magnitude;
                     windDirection.z = 0;
                     break;
                 case 2:
                     windDirectionLabel = "West";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = -windForce * (vesselDrag / 50);
+                    windDirection.z = -force.magnitude;
                     break;
                 case 3:
                     windDirectionLabel = "North";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 50);
+                    windDirection.y = -force.magnitude;
                     windDirection.z = 0;
                     break;
                 case 4:
                     windDirectionLabel = "East";
                     windDirection.x = 0;
                     windDirection.y = 0;
-                    windDirection.z = windForce * (vesselDrag / 50);
+                    windDirection.z = force.magnitude;
                     break;
                 case 5:
                     windDirectionLabel = "South West";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 50);
-                    windDirection.z = -windForce * (vesselDrag / 50);
+                    windDirection.y = force.magnitude;
+                    windDirection.z = -force.magnitude;
                     break;
                 case 6:
                     windDirectionLabel = "North West";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 50);
-                    windDirection.z = -windForce * (vesselDrag / 50);
+                    windDirection.y = -force.magnitude;
+                    windDirection.z = -force.magnitude;
                     break;
                 case 7:
                     windDirectionLabel = "North East";
                     windDirection.x = 0;
-                    windDirection.y = -windForce * (vesselDrag / 50);
-                    windDirection.z = windForce * (vesselDrag / 50);
+                    windDirection.y = -force.magnitude;
+                    windDirection.z = force.magnitude;
                     break;
                 case 8:
                     windDirectionLabel = "South East";
                     windDirection.x = 0;
-                    windDirection.y = windForce * (vesselDrag / 50);
-                    windDirection.z = windForce * (vesselDrag / 50);
+                    windDirection.y = force.magnitude;
+                    windDirection.z = force.magnitude;
                     break;
                 default:
                     windDirectionLabel = "N/a";
@@ -382,7 +378,7 @@ namespace KsWeather
                     GUILayout.EndHorizontal();
                     GUILayout.BeginVertical(GUILayout.Height(100));
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.000000"));
+                    GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.00000000"));
                     GUILayout.Label("Wind Direction: " + windDirectionLabel);
                     GUILayout.EndVertical();
                     GUILayout.EndHorizontal();
@@ -401,7 +397,7 @@ namespace KsWeather
                 GUILayout.EndHorizontal();
                 GUILayout.BeginVertical(GUILayout.Height(50));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.000000"));
+                GUILayout.Label("Vessel Drag: " + vesselDrag.ToString("0.00000000"));
                 GUILayout.Label("Wind Direction: N/a");
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
