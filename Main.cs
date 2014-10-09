@@ -320,7 +320,7 @@ namespace Kerbal_Weather_Systems
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
                     if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; } //Button for resizing the GUI
                     GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
-                    windSpeedString = GUILayout.TextField(windSpeed.ToString("0.00"), 25);
+                    //windSpeedString = GUILayout.TextArea(windSpeed.ToString("0.00"), 25);
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                     GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
@@ -331,16 +331,19 @@ namespace Kerbal_Weather_Systems
                     GUILayout.Label("Wind Direction: " + windDirectionLabel);
                     GUILayout.EndHorizontal();
                     GUILayout.EndVertical();
-                    GUI.DragWindow();
 
+                    /*
                     if (GUILayout.Button("Set Windspeed"))
                     {
 
-                        //windSpeed = float.Parse(windSpeedString); //Parse the textfield into the windspeed
+                        windSpeed = float.Parse(windSpeedString); //Parse the textfield into the windspeed
                         FARWind.SetWindFunction(windStuff); //Update the WindFunction
                         Debug.Log("WIND: setting wind function"); //Write to debug
+                        
                     }
-
+                     */
+                    GUI.DragWindow();
+                    
                 }
                 else //if we are not in an atmosphere, show the non atmo GUI
                 {
