@@ -320,7 +320,7 @@ namespace Kerbal_Weather_Systems
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
                     if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; } //Button for resizing the GUI
                     GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts"); 
-                    GUILayout.TextField("0.00" + windSpeedString); //Make a textfield for the Windspeed 
+                    GUILayout.TextField(windSpeedString); //Make a textfield for the Windspeed 
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                     GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
