@@ -1,7 +1,7 @@
 //Honourable Mentions and contributions to the code:
 //Cilph (he's an ass about it sometimes), TriggerAu (for helping me with a bunch of functionalities),
-//DYJ, Scott Manley, taniwha, Majiir (for kethane co-op and lots of coding help), 
-//Ippo and Ferram for use of FARWIND code and API, as well as helping with coding.
+//DYJ, Scott Manley, taniwha, Majiir, Ippo, 
+//Ferram for use of FARWIND code and API, as well as helping with coding.
 //And very much thanks for Chris_W for bugtesting intensively and helping out with the code bunches~
 
 using System;
@@ -27,6 +27,7 @@ namespace KsWeather
 
         //Boolean Variables
         public bool isWindAutomatic = true; //Value for automatic wind speed
+        public bool isWindowOpen = true; //Value for GUI window open
 
         //Integers
         public int windDirectionNumb;
@@ -255,64 +256,66 @@ namespace KsWeather
             double HighestPressure = FlightGlobals.getStaticPressure(0.0); //gets the highest pressure of the body the ship is in the SOI of
             vesselHeight = FlightGlobals.ship_altitude; //sets the vessel height as the altitude of the ship
 
-            if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
+            
+            if (isWindowOpen == true)
             {
-                windSpeed += 0.1f;
-            }
-            if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
-            {
-                if (windSpeed > 0) //makes sure that you cant have negative windspeed
+                if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
                 {
-                    windSpeed -= 0.1f;
+                    windSpeed += 1.0f;
+                }
+                if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
+                {
+                    if (windSpeed > 0) //makes sure that you cant have negative windspeed
+                    {
+                        windSpeed -= 1.0f;
+                    }
+                    else
+                        windSpeed -= 1.0f;
+                }
+                if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
+                {
+                    windSpeed = 0.0f;
+                }
+
+                if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
+                {
+                    windDirectionNumb = UnityEngine.Random.Range(1, 9);
+                }
+
+                if (isWindAutomatic == false)
+                {
+                    if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
+                    {
+                        if (isWindAutomatic == true)
+                        {
+                            isWindAutomatic = false;
+                        }
+                        else if (isWindAutomatic == false)
+                        {
+                            isWindAutomatic = true;
+                        }
+                    }
                 }
                 else
-                    windSpeed -= 0.0f;
-            }
-            if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
-            {
-                windSpeed = 0;
-            }
-
-            if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
-            {
-                windDirectionNumb = UnityEngine.Random.Range(1, 9);
-            }
-
-            if (isWindAutomatic == false)
-            {
-                if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
                 {
-                    if (isWindAutomatic == true)
+                    if (GUI.Button(new Rect(10, 140, 120, 25), "Manual Wind"))
                     {
-                       isWindAutomatic = false;
-                    }
-                    else if (isWindAutomatic == false)
-                    {
-                        isWindAutomatic = true;
+                        if (isWindAutomatic == true)
+                        {
+                            isWindAutomatic = false;
+                        }
+                        else if (isWindAutomatic == false)
+                        {
+                            isWindAutomatic = true;
+                        }
                     }
                 }
-            }
-            else
-            {
-                if (GUI.Button(new Rect(10, 140, 120, 25), "Manual Wind"))
+
+                if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
                 {
-                    if (isWindAutomatic == true)
-                    {
-                        isWindAutomatic = false;
-                    }
-                    else if (isWindAutomatic == false)
-                    {
-                        isWindAutomatic= true;
-                    }
-                }
-            }
 
-            
-
-            if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
-            {
-              
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
+                    if (GUILayout.Button("X")) { isWindowOpen = false; }
                     GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
@@ -327,23 +330,39 @@ namespace KsWeather
                     GUI.DragWindow();
 
 
+                }
+                else //if we are not in an atmosphere, show the non atmo GUI
+                {
+                    GUILayout.BeginHorizontal(GUILayout.Width(600));
+                    if (GUILayout.Button("X")) { isWindowOpen = false; }
+                    GUILayout.Label("Windspeed: " + "0" + " kernauts");
+                    GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
+                    GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
+                    GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
+                    GUILayout.Label("InAtmo? : False");
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginVertical(GUILayout.Height(50));
+                    GUILayout.BeginHorizontal(GUILayout.Width(600));
+                    GUILayout.Label("Wind Direction: N/a");
+                    GUILayout.EndVertical();
+                    GUILayout.EndHorizontal();
+                    GUI.DragWindow();
+                }
             }
-            else //if we are not in an atmosphere, show the non atmo GUI
+            
+            else if (isWindowOpen == false)
             {
-                GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Windspeed: " + "0" + " kernauts");
-                GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
-                GUILayout.Label("InAtmo? : False");
-                GUILayout.EndHorizontal();
+                GUILayout.Window(10, _windowPosition, OnWindow, "KsW");
+                GUILayout.Height(0);
+                GUILayout.Width(0);
+                GUILayout.BeginHorizontal(GUILayout.Width(50));
+                if (GUILayout.Button("KsW")) { isWindowOpen = true; }
                 GUILayout.BeginVertical(GUILayout.Height(50));
-                GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Wind Direction: N/a");
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
                 GUI.DragWindow();
             }
+            
         }
     }
 }
