@@ -313,9 +313,9 @@ namespace KsWeather
 
                 if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
                 {
-
+                    
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    if (GUILayout.Button("X")) { isWindowOpen = false; }
+                    if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; }
                     GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
@@ -334,7 +334,7 @@ namespace KsWeather
                 else //if we are not in an atmosphere, show the non atmo GUI
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    if (GUILayout.Button("X")) { isWindowOpen = false; }
+                    if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; }
                     GUILayout.Label("Windspeed: " + "0" + " kernauts");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
