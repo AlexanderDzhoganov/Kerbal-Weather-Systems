@@ -12,9 +12,9 @@ using System.Reflection;
 using UnityEngine;
 using KSP.IO;
 using ferram4;
-using KsWeather.Extensions;
+using KerbalWeatherSystems.Extensions;
 
-namespace KsWeather
+namespace Kerbal_Weather_Systems
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class KsMain : MonoBehaviour
@@ -48,7 +48,7 @@ namespace KsWeather
         
         //Strings
         public String windDirectionLabel;
-        
+        public String windSpeedString = "1";        
 
         
         private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KsWeather/Plugins/KsWeatherConfig.cfg"; } }
@@ -259,25 +259,28 @@ namespace KsWeather
             
             if (isWindowOpen == true)
             {
-                if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
-                {
-                    windSpeed += 1.0f;
-                }
-                if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
-                {
-                    if (windSpeed > 0) //makes sure that you cant have negative windspeed
-                    {
-                        windSpeed -= 1.0f;
-                    }
-                    else
-                        windSpeed -= 1.0f;
-                }
-                if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
+
+                
+
+                //if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
+                //{
+                    //windSpeed += 1.0f;
+                //}
+                //if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
+                //{
+                   // if (windSpeed > 0) //makes sure that you cant have negative windspeed
+                    //{
+                       // windSpeed -= 1.0f;
+                   // }
+                    //else
+                        //windSpeed -= 1.0f;
+                //}
+                if (GUI.Button(new Rect(205, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
                 {
                     windSpeed = 0.0f;
                 }
 
-                if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
+                if (GUI.Button(new Rect(330, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
                 {
                     windDirectionNumb = UnityEngine.Random.Range(1, 9);
                 }
@@ -315,8 +318,9 @@ namespace KsWeather
                 {
                     
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; }
-                    GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
+                    if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; } //Button for resizing the GUI
+                    GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts"); 
+                    GUILayout.TextField("0.00" + windSpeedString); //Make a textfield for the Windspeed 
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                     GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
@@ -329,12 +333,18 @@ namespace KsWeather
                     GUILayout.EndHorizontal();
                     GUI.DragWindow();
 
+                    if (GUILayout.Button("Set Windspeed"))
+                    {
+                        windSpeed = float.Parse(windSpeedString); //Parse the textfield into the windspeed
+                        FARWind.SetWindFunction(windStuff); //Update the WindFunction
+
+                    } 
 
                 }
                 else //if we are not in an atmosphere, show the non atmo GUI
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; }
+                    if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; } //Button for Resizing the GUI
                     GUILayout.Label("Windspeed: " + "0" + " kernauts");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
@@ -350,13 +360,13 @@ namespace KsWeather
                 }
             }
             
-            else if (isWindowOpen == false)
+            else if (isWindowOpen == false) //If the GUI is closed
             {
                 GUILayout.Window(10, _windowPosition, OnWindow, "KsW");
                 GUILayout.Height(0);
                 GUILayout.Width(0);
                 GUILayout.BeginHorizontal(GUILayout.Width(50));
-                if (GUILayout.Button("KsW")) { isWindowOpen = true; }
+                if (GUILayout.Button("KsW")) { isWindowOpen = true; } //Button to re-open the GUI
                 GUILayout.BeginVertical(GUILayout.Height(50));
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
