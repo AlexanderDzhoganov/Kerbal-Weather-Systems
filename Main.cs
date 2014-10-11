@@ -28,11 +28,11 @@ namespace Kerbal_Weather_Systems
         //Boolean Variables
         public bool isWindAutomatic = false; //Value for automatic wind speed
         public bool isWindowOpen = true; //Value for GUI window open
-        public bool showWindControls = true;
+        public bool showWindControls = false;
         public bool showRainControls = false;
         public bool showSnowControls = false;
-        public bool showCloudsControls = false;
-        public bool showStormsControls = false;
+        public bool showCloudControls = false;
+        public bool showStormControls = false;
 
         //Integers
         public int windDirectionNumb;
@@ -267,43 +267,28 @@ namespace Kerbal_Weather_Systems
 
             if (isWindowOpen == true)
             {
-                
 
-                if(GUILayout.Toggle(showWindControls,"Wind")) //Call the Wind Control Panel
-                {
-                    WindControls();
-                }
+                if (GUILayout.Button("Minimize")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
 
-                if (GUI.Button(new Rect(10, 55, 75, 25), "Rain")) //Call the Rain Control Panel
-                {
-                    RainControls();
-                }
-                if (GUI.Button(new Rect(10, 90, 75, 25), "Clouds")) //Call the Clouds Control Panel
-                {
-                    CloudControls();
-                }
-                if (GUI.Button(new Rect(10, 125, 75, 25), "Snow")) //Call the Snow Control Panel
-                {
-                    SnowControls();
-                }
-                if (GUI.Button(new Rect(10, 160, 75, 25), "Storms")) //Call the Storm Control Panel
-                {
-                    StormControls();
-                }
+                showWindControls = GUILayout.Toggle(showWindControls, "Wind"); if (showWindControls) WindControls(); //Do the Toggle bullshittery, then Call the Wind Control Panel
+
+                showRainControls = GUILayout.Toggle(showRainControls, "Rain"); if (showRainControls) RainControls(); //Do the Toggle bullshittery, then Call the Rain Control Panel
+
+                showCloudControls = GUILayout.Toggle(showCloudControls, "Clouds"); if (showCloudControls) CloudControls(); //Do the Toggle bullshittery, then Call the Clouds Control Panel
+
+                showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); if (showSnowControls) SnowControls(); //Do the Toggle bullshittery, then Call the Snow Control Panel
+
+                showStormControls = GUILayout.Toggle(showStormControls, "Storms"); if (showStormControls) StormControls(); //Do the Toggle bullshittery, then Call the Storm Control Panel
+
+                GUI.DragWindow();
 
             }
             else if (isWindowOpen == false) //If the GUI is closed
             {
                 ClosedGUI();
             }
-                    
-            /*
-            GUI.Button(new Rect(10, 45, 75, 25), "Rain"); //Rain Control Panel
-            GUI.Button(new Rect(10, 80, 75, 25), "Clouds"); //Cloud Control Panel
-            GUI.Button(new Rect(10, 115, 75, 25), "Snow"); //Snow Control Panel
-            GUI.Button(new Rect(10, 150, 75, 25), "Storms"); //Storms Control panel
-            */
         }
+
         public void ClosedGUI()
         {
             GUILayout.Window(10, MainGUI, OnWindow, "KsW");
@@ -322,16 +307,13 @@ namespace Kerbal_Weather_Systems
             
             Debug.Log("Weather: WindControls were pressed!");
 
-            //MainGUI.width = 400;
-            GUILayout.BeginHorizontal(GUILayout.Width(400));
-            GUILayout.EndHorizontal();
 
-            if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
+            if (GUI.Button(new Rect(10, 150, 150, 25), "Wind Speed Up")) //Turns up wind speed
             {
                 windSpeed += 1.0f;
             }
 
-            if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
+            if (GUI.Button(new Rect(170, 150, 150, 25), "Wind Speed Down")) //Turns down wind speed
             {
                 if (windSpeed > 0) //makes sure that you cant have negative windspeed
                 {
@@ -341,19 +323,19 @@ namespace Kerbal_Weather_Systems
                     windSpeed -= 1.0f;
             }
 
-            if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
+            if (GUI.Button(new Rect(330, 150, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
             {
                 windSpeed = 0.0f;
             }
 
-            if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
+            if (GUI.Button(new Rect(490, 150, 125, 25), "Wind Direct.")) //Changes the wind direction
             {
                 windDirectionNumb = UnityEngine.Random.Range(1, 9);
             }
 
             if (isWindAutomatic == false)
             {
-                if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
+                if (GUI.Button(new Rect(10, 190, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
                 {
                     if (isWindAutomatic == true)
                     {
@@ -367,7 +349,7 @@ namespace Kerbal_Weather_Systems
             }
             else
             {
-                if (GUI.Button(new Rect(10, 140, 120, 25), "Manual Wind"))
+                if (GUI.Button(new Rect(10, 190, 120, 25), "Manual Wind"))
                 {
                     if (isWindAutomatic == true)
                     {
@@ -384,14 +366,13 @@ namespace Kerbal_Weather_Systems
             {
 
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                if (GUILayout.Button("X")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
                 GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
                 GUILayout.Label("InAtmo? : True");
                 GUILayout.EndHorizontal();
-                GUILayout.BeginVertical(GUILayout.Height(175));
+                GUILayout.BeginVertical(GUILayout.Height(100));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
                 GUILayout.Label("Wind Direction: " + windDirectionLabel);
                 GUILayout.EndHorizontal();
@@ -402,39 +383,18 @@ namespace Kerbal_Weather_Systems
             else //if we are not in an atmosphere, show the non atmo GUI
             {
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                if (GUILayout.Button("X")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for Resizing the GUI
                 GUILayout.Label("Windspeed: " + "0" + " kernauts");
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
                 GUILayout.Label("InAtmo? : False");
                 GUILayout.EndHorizontal();
-                GUILayout.BeginVertical(GUILayout.Height(175));
+                GUILayout.BeginVertical(GUILayout.Height(100));
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
                 GUILayout.Label("Wind Direction: N/a");
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
                 GUI.DragWindow();
-            }
-
-            if (showWindControls == true) //Check if wind controls should be shown
-            {
-                Debug.Log("Weather: WindControls are true!");
-                
-            }
-
-            else
-            {
-                Debug.Log("Weather: WindControls are false!");
-
-                //Reset the GUI size
-                //MainGUI.height = 0;
-                MainGUI.width = 200;
-                GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Hello");
-                GUILayout.EndHorizontal();
-                GUI.DragWindow();
-
             }
         }
     
