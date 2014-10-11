@@ -12,23 +12,23 @@ using System.Reflection;
 using UnityEngine;
 using KSP.IO;
 using ferram4;
-using KerbalWeatherSystems.Extensions;
+
 
 namespace Kerbal_Weather_Systems
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
-    public class KsMain : MonoBehaviour
+    public class KerbalWeatherSystems : MonoBehaviour
     {
         //Private variables
-        private static Rect MainGUI = new Rect();
+        private static Rect MainGUI = new Rect(100,100,200,200);
 
 
         //Public variables
 
         //Boolean Variables
-        public bool isWindAutomatic = true; //Value for automatic wind speed
+        public bool isWindAutomatic = false; //Value for automatic wind speed
         public bool isWindowOpen = true; //Value for GUI window open
-        public bool showWindControls = false;
+        public bool showWindControls = true;
         public bool showRainControls = false;
         public bool showSnowControls = false;
         public bool showCloudsControls = false;
@@ -40,8 +40,8 @@ namespace Kerbal_Weather_Systems
         //Singles
 
         //Doubles
-        double Pressure = FlightGlobals.ActiveVessel.staticPressure;
-        public double HighestPressure = FlightGlobals.getStaticPressure(0);
+        public double Pressure = FlightGlobals.ActiveVessel.staticPressure;
+        public double HighestPressure;
         public double GForce;
         public double vesselHeight = 0;
 
@@ -53,10 +53,10 @@ namespace Kerbal_Weather_Systems
         
         //Strings
         public String windDirectionLabel;
-        public String windSpeedString = "0.00f";
+        //public String windSpeedString = "0.00f";
 
         
-        private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KerbalWeatherSystems/Plugins/KerbalWeatherSystems.cfg"; } }
+        //private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KerbalWeatherSystems/Plugins/KerbalWeatherSystems.cfg"; } }
         /*
         * use the Awake() method instead of the constructor for initializing data because Unity uses
         * Serialization a lot.
@@ -102,17 +102,20 @@ namespace Kerbal_Weather_Systems
 */
         void FixedUpdate()
         {
+
+            if (!HighLogic.LoadedSceneIsFlight)
+                return;   
+
             Pressure = FlightGlobals.ActiveVessel.staticPressure;
             HighestPressure = FlightGlobals.getStaticPressure(0);
             GForce = FlightGlobals.ActiveVessel.geeForce;
 
-            if (!HighLogic.LoadedSceneIsFlight)
-                return;   
 
             if (windSpeed != 0.0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
                 
+
                 if (vessel != null)
                 {
 
@@ -227,14 +230,14 @@ namespace Kerbal_Weather_Systems
 
         public void Save(ConfigNode node)
         {
-            PluginConfiguration config = PluginConfiguration.CreateForType<KsMain>();
+            PluginConfiguration config = PluginConfiguration.CreateForType<KerbalWeatherSystems>();
             config.SetValue("Window Position", MainGUI);
             config.save();
         }
 
         public void Load(ConfigNode node)
         {
-            PluginConfiguration config = PluginConfiguration.CreateForType<KsMain>();
+            PluginConfiguration config = PluginConfiguration.CreateForType<KerbalWeatherSystems>();
             config.load();
             MainGUI = config.GetValue<Rect>("Window Position");
         }
@@ -242,172 +245,56 @@ namespace Kerbal_Weather_Systems
         //Called when the drawing happens
         private void OnDraw() 
         {
-
-            double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude);
-
+            
         }
 
         //Called when the GUI things happen
         void OnGUI()
         {
             MainGUI = GUILayout.Window(10, MainGUI, OnWindow, "Weather~");
-
         }
 
         // Called when the GUI window things happen
         void OnWindow(int windowId)
         {
-            double Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude); //gets the current pressure of the atmo the ship is in
-            double HighestPressure = FlightGlobals.getStaticPressure(0.0); //gets the highest pressure of the body the ship is in the SOI of
+            Pressure = FlightGlobals.getStaticPressure(FlightGlobals.ship_altitude); //gets the current pressure of the atmo the ship is in
+            HighestPressure = FlightGlobals.getStaticPressure(0.0); //gets the highest pressure of the body the ship is in the SOI of
             vesselHeight = FlightGlobals.ship_altitude; //sets the vessel height as the altitude of the ship
 
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Width(500);
+            GUILayout.EndHorizontal();
 
             if (isWindowOpen == true)
             {
-
-                if (GUI.Button(new Rect(10, 10, 75, 25), "Wind")) //Wind Control Panel
-                {
-                    Debug.Log("Weather: WindControls were pressed!");
-
-                    if (showWindControls == true) //Check if wind controls should be shown
-                    {
-                        Debug.Log("Weather: WindControls are true!");
-
-                        //MainGUI.width = 0;
-                        //MainGUI.height = 0;
-                        GUILayout.Height(100);
-                        GUILayout.Width(100);
-
-                        if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
-                        {
-                            windSpeed += 1.0f;
-                        }
-
-                        if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
-                        {
-                            if (windSpeed > 0) //makes sure that you cant have negative windspeed
-                            {
-                                windSpeed -= 1.0f;
-                            }
-                            else
-                                windSpeed -= 1.0f;
-                        }
-
-                        if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
-                        {
-                            windSpeed = 0.0f;
-                        }
-
-                        if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
-                        {
-                            windDirectionNumb = UnityEngine.Random.Range(1, 9);
-                        }
-
-                        if (isWindAutomatic == false)
-                        {
-                            if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
-                            {
-                                if (isWindAutomatic == true)
-                                {
-                                    isWindAutomatic = false;
-                                }
-                                else if (isWindAutomatic == false)
-                                {
-                                    isWindAutomatic = true;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (GUI.Button(new Rect(10, 140, 120, 25), "Manual Wind"))
-                            {
-                                if (isWindAutomatic == true)
-                                {
-                                    isWindAutomatic = false;
-                                }
-                                else if (isWindAutomatic == false)
-                                {
-                                    isWindAutomatic = true;
-                                }
-                            }
-                        }
-
-                        if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
-                        {
-
-                            GUILayout.BeginHorizontal(GUILayout.Width(600));
-                            //if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; } //Button for resizing the GUI
-                            GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
-                            GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                            GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                            GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
-                            GUILayout.Label("InAtmo? : True");
-                            GUILayout.EndHorizontal();
-                            GUILayout.BeginVertical(GUILayout.Height(175));
-                            GUILayout.BeginHorizontal(GUILayout.Width(600));
-                            GUILayout.Label("Wind Direction: " + windDirectionLabel);
-                            GUILayout.EndHorizontal();
-                            GUILayout.EndVertical();
-                            GUI.DragWindow();
-
-                        }
-                        else //if we are not in an atmosphere, show the non atmo GUI
-                        {
-                            GUILayout.BeginHorizontal(GUILayout.Width(600));
-                            //if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; } //Button for Resizing the GUI
-                            GUILayout.Label("Windspeed: " + "0" + " kernauts");
-                            GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                            GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                            GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
-                            GUILayout.Label("InAtmo? : False");
-                            GUILayout.EndHorizontal();
-                            GUILayout.BeginVertical(GUILayout.Height(175));
-                            GUILayout.BeginHorizontal(GUILayout.Width(600));
-                            GUILayout.Label("Wind Direction: N/a");
-                            GUILayout.EndVertical();
-                            GUILayout.EndHorizontal();
-                            GUI.DragWindow();
-                        }
-
-                        showWindControls = false; //toggle the Wind Controls off on next press
-                    }
-                    else if (showWindControls == false)
-                    {
-                        Debug.Log("Weather: WindControls are false!");
-                        //Reset the GUI size
-                        MainGUI.height = 0;
-                        MainGUI.width = 0;
-
-                        GUILayout.Width(100);
-                        GUILayout.Height(250);
-                        GUILayout.BeginVertical();
-                        if (GUILayout.Button("Wind")) { showWindControls = true; } //Toggle on Wind Controls
-                        GUILayout.Button("Rain");
-                        GUILayout.Button("Cloud");
-                        GUILayout.Button("Snow");
-                        GUILayout.Button("Storms");
-                        GUILayout.EndVertical();
-                        GUI.DragWindow();
-                        showWindControls = true;
-
-                    }
-                }
                 
-            }
-           
 
+                if(GUI.Button(new Rect(10, 20, 75, 25), "Wind")) //Call the Wind Control Panel
+                {
+                    WindControls();
+                }
+
+                if (GUI.Button(new Rect(10, 55, 75, 25), "Rain")) //Call the Rain Control Panel
+                {
+                    RainControls();
+                }
+                if (GUI.Button(new Rect(10, 90, 75, 25), "Clouds")) //Call the Clouds Control Panel
+                {
+                    CloudControls();
+                }
+                if (GUI.Button(new Rect(10, 125, 75, 25), "Snow")) //Call the Snow Control Panel
+                {
+                    SnowControls();
+                }
+                if (GUI.Button(new Rect(10, 160, 75, 25), "Storms")) //Call the Storm Control Panel
+                {
+                    StormControls();
+                }
+
+            }
             else if (isWindowOpen == false) //If the GUI is closed
             {
-                GUILayout.Window(10, MainGUI, OnWindow, "KsW");
-                GUILayout.Height(0);
-                GUILayout.Width(0);
-                GUILayout.BeginHorizontal(GUILayout.Width(50));
-                if (GUILayout.Button("KsW")) { isWindowOpen = true; } //Button to re-open the GUI
-                GUILayout.BeginVertical(GUILayout.Height(50));
-                GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
-                GUI.DragWindow();
+                ClosedGUI();
             }
                     
             /*
@@ -417,5 +304,155 @@ namespace Kerbal_Weather_Systems
             GUI.Button(new Rect(10, 150, 75, 25), "Storms"); //Storms Control panel
             */
         }
+        public void ClosedGUI()
+        {
+            GUILayout.Window(10, MainGUI, OnWindow, "KsW");
+                //GUILayout.Height(0);
+                //GUILayout.Width(0);
+                GUILayout.BeginHorizontal(GUILayout.Width(50));
+                if (GUILayout.Button("KsW")) { isWindowOpen = true; } //Button to re-open the GUI
+                GUILayout.BeginVertical(GUILayout.Height(50));
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+                //GUI.DragWindow();
+        }
+
+        void WindControls() //Wind Control Panel
+        {
+            
+            Debug.Log("Weather: WindControls were pressed!");
+
+            if (showWindControls == true) //Check if wind controls should be shown
+            {
+                Debug.Log("Weather: WindControls are true!");
+                    
+                if (GUI.Button(new Rect(10, 100, 150, 25), "Wind Speed Up")) //Turns up wind speed
+                {
+                    windSpeed += 1.0f;
+                }
+
+                if (GUI.Button(new Rect(170, 100, 150, 25), "Wind Speed Down")) //Turns down wind speed
+                {
+                    if (windSpeed > 0) //makes sure that you cant have negative windspeed
+                    {
+                        windSpeed -= 1.0f;
+                    }
+                    else
+                        windSpeed -= 1.0f;
+                    }
+
+                if (GUI.Button(new Rect(330, 100, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
+                {
+                    windSpeed = 0.0f;
+                }
+
+                if (GUI.Button(new Rect(490, 100, 125, 25), "Wind Direct.")) //Changes the wind direction
+                {
+                    windDirectionNumb = UnityEngine.Random.Range(1, 9);
+                }
+
+                if (isWindAutomatic == false)
+                {
+                    if (GUI.Button(new Rect(10, 140, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
+                    {
+                        if (isWindAutomatic == true)
+                        {
+                            isWindAutomatic = false;
+                        }
+                        else if (isWindAutomatic == false)
+                        {
+                            isWindAutomatic = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (GUI.Button(new Rect(10, 140, 120, 25), "Manual Wind"))
+                    {
+                        if (isWindAutomatic == true)
+                        {
+                            isWindAutomatic = false;
+                        }
+                        else if (isWindAutomatic == false)
+                        {
+                            isWindAutomatic = true;
+                        }
+                    }
+                }
+
+                if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
+                {
+
+                    GUILayout.BeginHorizontal(GUILayout.Width(600));
+                    if (GUILayout.Button("X")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
+                    GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
+                    GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
+                    GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
+                    GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
+                    GUILayout.Label("InAtmo? : True");
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginVertical(GUILayout.Height(175));
+                    GUILayout.BeginHorizontal(GUILayout.Width(600));
+                    GUILayout.Label("Wind Direction: " + windDirectionLabel);
+                    GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+                    //GUI.DragWindow();
+
+                }
+                else //if we are not in an atmosphere, show the non atmo GUI
+                {
+                    GUILayout.BeginHorizontal(GUILayout.Width(600));
+                    //if (GUILayout.Button("X")) { isWindowOpen = false; _windowPosition.height = 0; _windowPosition.width = 0; } //Button for Resizing the GUI
+                    GUILayout.Label("Windspeed: " + "0" + " kernauts");
+                    GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
+                    GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
+                    GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
+                    GUILayout.Label("InAtmo? : False");
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginVertical(GUILayout.Height(175));
+                    GUILayout.BeginHorizontal(GUILayout.Width(600));
+                    GUILayout.Label("Wind Direction: N/a");
+                    GUILayout.EndVertical();
+                    GUILayout.EndHorizontal();
+                    //GUI.DragWindow();
+                }
+
+                showWindControls = false; //toggle the Wind Controls off on next press
+            }
+
+            else
+            {
+                Debug.Log("Weather: WindControls are false!");
+
+                //Reset the GUI size
+                //MainGUI.height = 0;
+                //MainGUI.width = 0;
+
+                    
+                showWindControls = true;
+
+            }
+        }
+    
+        void RainControls() //Rain Control Panel
+        {
+
+        }
+
+        void CloudControls() //Cloud Control Panel
+        {
+
+        }
+
+        void SnowControls() //Snow Control Panel
+        {
+
+        }
+
+        void StormControls() //Storm Control Panel
+        {
+
+        }
+
     }
 }
