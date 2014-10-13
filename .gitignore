@@ -154,3 +154,8 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+*.dll
+KerbalWeatherSystems.sln
+KerbalWeatherSystems/Kerbal Weather Systems.csproj
+KerbalWeatherSystems/Kerbal Weather Systems.sln
+KerbalWeatherSystems/Properties/AssemblyInfo.cs

@@ -363,10 +363,9 @@ namespace Kerbal_Weather_Systems
 
                 if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
                 {
-
+                    
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
                     GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
-                    windSpeed = GUILayout.HorizontalSlider(windSpeed,0.0f,100.0f);
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                     GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
