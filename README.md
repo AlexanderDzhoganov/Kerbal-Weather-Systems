@@ -1,4 +1,4 @@
-KsWeather
+Kerbal Weather Systems!
 =========
 
-KsWeather
+Adding cool breezes and thunderous skies!~
