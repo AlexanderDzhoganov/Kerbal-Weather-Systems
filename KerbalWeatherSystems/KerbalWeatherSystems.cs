@@ -209,7 +209,7 @@ namespace Kerbal_Weather_Systems
                 }
             }
     
-        
+        //fdsafdsa
         //Do ALL the wind things!
         public Vector3 windStuff(CelestialBody body, Part part, Vector3 position)
         {
