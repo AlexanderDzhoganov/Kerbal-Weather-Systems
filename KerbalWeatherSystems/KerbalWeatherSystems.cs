@@ -154,49 +154,49 @@ namespace Kerbal_Weather_Systems
             {
                 
                 case 1:
-                    windDirectionLabel = "South";
+                    windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
                     windDirection.x = 0;
                     windDirection.y = windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     windDirection.z = 0;
                     break;
                 case 2:
-                    windDirectionLabel = "West";
+                    windDirectionLabel = "Easterly"; //Heading West: Wind going from East to West
                     windDirection.x = 0;
                     windDirection.y = 0;
                     windDirection.z = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     break;
                 case 3:
-                    windDirectionLabel = "North";
+                    windDirectionLabel = "Southerly"; //Heading Northt: Wind going from South to North
                     windDirection.x = 0;
                     windDirection.y = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     windDirection.z = 0;
                     break;
                 case 4:
-                    windDirectionLabel = "East";
+                    windDirectionLabel = "Westerly"; //Heading East: Wind going from West to East
                     windDirection.x = 0;
                     windDirection.y = 0;
                     windDirection.z = windSpeed; //* (float.Parse(HighestPressure.ToString()));
                      break;
                 case 5:
-                    windDirectionLabel = "South West";
+                    windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
                     windDirection.x = 0;
                     windDirection.y = windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     windDirection.z = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     break;
                 case 6:
-                    windDirectionLabel = "North West";
+                    windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
                     windDirection.x = 0;
                     windDirection.y = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     windDirection.z = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     break;
                 case 7:
-                    windDirectionLabel = "North East";
+                    windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
                     windDirection.x = 0;
                     windDirection.y = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     windDirection.z = windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     break;
                 case 8:
-                    windDirectionLabel = "South East";
+                    windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
                     windDirection.x = 0;
                     windDirection.y = windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     windDirection.z = windSpeed; //* (float.Parse(HighestPressure.ToString()));
