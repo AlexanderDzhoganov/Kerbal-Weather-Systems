@@ -12,6 +12,9 @@ using System.Reflection;
 using UnityEngine;
 using KSP.IO;
 using ferram4;
+using KerbalWeatherSystems.Extensions;
+
+using Random = UnityEngine.Random;
 
 
 namespace Kerbal_Weather_Systems
@@ -27,6 +30,11 @@ namespace Kerbal_Weather_Systems
 
         //Boolean Variables
         public bool isWindAutomatic = false; //Value for automatic wind speed
+        public bool isRaining = false; //Is it Raining?
+        public bool isSnowing = false; //Is it Snowing?
+        public bool isStorming = false; //Is it storming?
+
+        //GUI Bool
         public bool isWindowOpen = true; //Value for GUI window open
         public bool showWindControls = false;
         public bool showRainControls = false;
@@ -47,6 +55,7 @@ namespace Kerbal_Weather_Systems
 
         //Floating point numbers
         public float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
+        private float Anger = 9001.0f; //You've found my easter egg!
         
         //Arrays
         public string[] WindGUIButtons = new string[3] {"Upwind", "DownWind", "WindDirection"};
@@ -74,12 +83,20 @@ namespace Kerbal_Weather_Systems
 */
         void Awake()
         {
-            UnityEngine.Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
+
+            Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
-            windDirectionNumb = UnityEngine.Random.Range(1, 9); //Set wind direction
+            windDirectionNumb = Random.Range(1, 9); //Set wind direction
 
             Debug.Log("WIND: setting wind function"); //Write to debug
             FARWind.SetWindFunction(windStuff); //Set the WindFunction to the windStuff Function
+            
+
+        }
+        
+        //Called after Update()
+        void LateUpdate()
+        {
 
         }
         
@@ -113,7 +130,7 @@ namespace Kerbal_Weather_Systems
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
                 
-
+                
                 if (vessel != null)
                 {
 
@@ -326,7 +343,12 @@ namespace Kerbal_Weather_Systems
 
             if (GUI.Button(new Rect(490, 150, 125, 25), "Wind Direct.")) //Changes the wind direction
             {
-                windDirectionNumb = UnityEngine.Random.Range(1, 9);
+                windDirectionNumb += 1;
+
+                if(windDirectionNumb == 9)
+                {
+                    windDirectionNumb = 1;
+                }
             }
 
             if (isWindAutomatic == false)
