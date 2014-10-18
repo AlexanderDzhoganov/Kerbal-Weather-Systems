@@ -3,6 +3,7 @@
 //DYJ, Scott Manley, taniwha, Majiir, Ippo, 
 //Ferram for use of FARWIND code and API, as well as helping with coding.
 //And very much thanks for Chris_W for bugtesting intensively and helping out with the code bunches~
+//Very, very much thanks for use of code on Rbray's EVE mod, it really helps to get clouds going!
 
 using System;
 using System.Collections.Generic;
