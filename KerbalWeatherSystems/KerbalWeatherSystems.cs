@@ -387,7 +387,7 @@ namespace Kerbal_Weather_Systems
                 {
                     
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " kernauts");
+                    GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " m/s");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                     GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
@@ -404,7 +404,7 @@ namespace Kerbal_Weather_Systems
                 else //if we are not in an atmosphere, show the non atmo GUI
                 {
                     GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Windspeed: " + "0" + " kernauts");
+                    GUILayout.Label("Windspeed: " + "0" + " m/s");
                     GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                     GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                     GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
