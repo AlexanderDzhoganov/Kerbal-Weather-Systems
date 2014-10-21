@@ -42,6 +42,9 @@ namespace Kerbal_Weather_Systems
         public bool showSnowControls = false;
         public bool showCloudControls = false;
         public bool showStormControls = false;
+        //private static Type serverType = null; //The server stuff for the assembly version.
+        //private static bool? installed = null; //Checks if FARWind is installed
+        public bool showWindLines = false;
 
         //Integers
         public int windDirectionNumb;
@@ -68,6 +71,9 @@ namespace Kerbal_Weather_Systems
         public String windDirectionLabel;
         public String windSpeedString = "1";
 
+        //Test Variables
+        private LineRenderer line = null;
+        
         
         //private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KerbalWeatherSystems/Plugins/KerbalWeatherSystems.cfg"; } }
         /*
@@ -114,7 +120,7 @@ namespace Kerbal_Weather_Systems
 */
         void Update()
         {
-
+            
         }
 
         
@@ -125,8 +131,11 @@ namespace Kerbal_Weather_Systems
         {
 
             if (!HighLogic.LoadedSceneIsFlight)
-                return;   
+                return;
 
+            Part part = FlightGlobals.ActiveVessel.rootPart;
+
+            
             if (windSpeed != 0.0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
@@ -184,7 +193,7 @@ namespace Kerbal_Weather_Systems
                     windDirection.z = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     break;
                 case 3:
-                    windDirectionLabel = "Southerly"; //Heading Northt: Wind going from South to North
+                    windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
                     windDirection.x = 0;
                     windDirection.y = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
                     windDirection.z = 0;
@@ -225,6 +234,7 @@ namespace Kerbal_Weather_Systems
                     break;
 
                 }
+            
             }
     
         //Do ALL the wind things!
@@ -319,9 +329,37 @@ namespace Kerbal_Weather_Systems
             GUI.DragWindow();
         }
 
+        //Displays the wind vector as a line from the GUI.
+        public void WindVectorLine()
+        {
+            
+                // First of all, create a GameObject to which LineRenderer will be attached.
+                //GameObject obj = new GameObject("Line");
+                Part part = FlightGlobals.ActiveVessel.rootPart;
+                GameObject obj = new GameObject("Line");
+                // Then create renderer itself...
+                line = obj.AddComponent<LineRenderer>();
+                line.transform.parent = transform; // ...child to our part...
+                line.useWorldSpace = true; // ...and moving along with it (rather 
+                // than staying in fixed world coordinates)
+                line.transform.localPosition = Vector3.zero;
+                line.transform.localEulerAngles = Vector3.zero;
+
+                // Make it render a red to yellow triangle, 1 meter wide and 2 meters long
+                line.material = new Material(Shader.Find("Particles/Additive"));
+                line.SetColors(Color.red, Color.yellow);
+                line.SetWidth(1, 0);
+                line.SetVertexCount(2);
+                line.SetPosition(0, part.transform.position);
+                line.SetPosition(1, windDirection); //Draws the end point in the direction of the wind
+                
+            
+            
+        }
+
         void WindControls() //Wind Control Panel
         {
-
+            
             if (GUI.Button(new Rect(10, 150, 150, 25), "Wind Speed Up")) //Turns up wind speed
             {
                 windSpeed += 1.0f;
@@ -379,6 +417,11 @@ namespace Kerbal_Weather_Systems
                         isWindAutomatic = true;
                     }
                 }
+            }
+
+            if (GUI.Button(new Rect(140, 190, 120, 25), "ShowWind"))
+            {
+                WindVectorLine();
             }
 
                 
@@ -439,5 +482,47 @@ namespace Kerbal_Weather_Systems
 
         }
 
+        // Return the current instance of the server, if any.
+        /*
+        public static FARWind Server
+        {
+            get
+            {
+                if (FARWindInstalled)
+                {
+                    object instance = serverType
+                    .GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)
+                    .GetValue(null, null);
+                    return (FARWind)DuckTyping.Cast(typeof(FARWind), instance);
+                }
+                else
+                    return null;
+            }
+         
+        }
+
+        //Finds the server type of the assembly
+        private static Type FindServerType()
+        {
+            return AssemblyLoader.loadedAssemblies
+            .SelectMany(a => a.assembly.GetExportedTypes())
+            .SingleOrDefault(t => t.FullName == "ferram4.FARWind");
+        }
+
+        /// Checks if FARWind is installed and can be located
+        public static bool FARWindInstalled
+        {
+            get
+            {
+                if (installed == null)
+                {
+                    serverType = FindServerType();
+                    installed = !(serverType == null);
+                }
+                return (bool)installed;
+            }
+        }
+
+         */
     }
 }
