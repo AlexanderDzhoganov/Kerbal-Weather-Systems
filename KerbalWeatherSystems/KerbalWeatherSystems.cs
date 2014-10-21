@@ -135,111 +135,82 @@ namespace Kerbal_Weather_Systems
 
             Part part = FlightGlobals.ActiveVessel.rootPart;
 
-            
             if (windSpeed != 0.0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
+
+                Vector3 Up = vessel.upAxis; //get the up relative to the surface
+                Up.Normalize(); //normalize that shit
+                Vector3 East = Vector3.Cross(Up, vessel.mainBody.angularVelocity); //Get the East axis
+                East.Normalize(); //Normalize that shit
+                Vector3 North = Vector3.Cross(East, vessel.upAxis); //Get the north axis
+                North.Normalize();//Guess what? Normalize that shit
                 
-                
-                if (vessel != null)
+
+                //Defines the Wind Speed stuff
+                switch (windDirectionNumb)
                 {
 
-                    if (vessel.parts.Count > 0)
-                    {
-                        
-                        foreach (Part p in vessel.parts)
-                        {
+                    case 1:
+                        windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
+                        windDirection = -North * windSpeed;
 
-                            if (p.rigidbody != null)
-                            {
-                                
-                                    if (p.physicalSignificance != Part.PhysicalSignificance.NONE)
-                                    {
+                        break;
+                    case 2:
+                        windDirectionLabel = "Easterly"; //Heading West: Wind going from East to West
+                        windDirection = -East * windSpeed;
 
-                                        //p.rigidbody.AddForce(windDirection); // adds force and drag unto each part
+                        break;
+                    case 3:
+                        windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
+                        windDirection = North * windSpeed;
 
-                                    }
-                            }
-                        }
-                        
-                        //Part testPart = vessel.parts[0];
-                        //testPart.rigidbody.AddForce(forceDirection * windForce);
-                    }
-                    else
-                    {
-                        //Debug.Log("KSweatherSystem: activeVessel parts count is < 0");
-                    }
-                }
-                else
-                {
-                    //Debug.Log("KSweatherSystem: activeVessel is null");
+                        break;
+                    case 4:
+                        windDirectionLabel = "Westerly"; //Heading East: Wind going from West to East
+                        windDirection = East * windSpeed;
+
+                        break;
+                    case 5:
+                        windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
+                        windDirection = (-North + -East).normalized * windSpeed;
+
+                        break;
+                    case 6:
+                        windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
+                        windDirection = (North + -East).normalized * windSpeed;
+
+                        break;
+                    case 7:
+                        windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
+                        windDirection = (North + East).normalized * windSpeed;
+
+                        break;
+                    case 8:
+                        windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
+                        windDirection = (-North + East).normalized * windSpeed;
+
+                        break;
+                    default:
+                        windDirectionLabel = "N/a";
+                        windDirection.Zero(); //Zeroes the wind direction vector?
+                        break;
+
                 }
             }
-
-            //Defines the Wind Speed stuff
-            switch (windDirectionNumb)
-            {
-                
-                case 1:
-                    windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
-                    windDirection.x = 0;
-                    windDirection.y = windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    windDirection.z = 0;
-                    break;
-                case 2:
-                    windDirectionLabel = "Easterly"; //Heading West: Wind going from East to West
-                    windDirection.x = 0;
-                    windDirection.y = 0;
-                    windDirection.z = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    break;
-                case 3:
-                    windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
-                    windDirection.x = 0;
-                    windDirection.y = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    windDirection.z = 0;
-                    break;
-                case 4:
-                    windDirectionLabel = "Westerly"; //Heading East: Wind going from West to East
-                    windDirection.x = 0;
-                    windDirection.y = 0;
-                    windDirection.z = windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                     break;
-                case 5:
-                    windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
-                    windDirection.x = 0;
-                    windDirection.y = windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    windDirection.z = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    break;
-                case 6:
-                    windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
-                    windDirection.x = 0;
-                    windDirection.y = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    windDirection.z = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    break;
-                case 7:
-                    windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
-                    windDirection.x = 0;
-                    windDirection.y = -windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    windDirection.z = windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    break;
-                case 8:
-                    windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
-                    windDirection.x = 0;
-                    windDirection.y = windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    windDirection.z = windSpeed; //* (float.Parse(HighestPressure.ToString()));
-                    break;
-                default:
-                    windDirectionLabel = "N/a";
-                    windDirection.Zero(); //Zeroes the wind direction vector?
-                    break;
-
-                }
-            
-            }
+        }
     
         //Do ALL the wind things!
         public Vector3 windStuff(CelestialBody body, Part part, Vector3 position)
         {
+            Vessel vessel = FlightGlobals.ActiveVessel;
+
+            Vector3 Up = vessel.upAxis;
+            Up.Normalize();
+            Vector3 East = Vector3.Cross(Up, vessel.mainBody.angularVelocity);
+            East.Normalize();
+            Vector3 North = Vector3.Cross(East, vessel.upAxis);
+            North.Normalize();
 
             try
             {
@@ -252,6 +223,8 @@ namespace Kerbal_Weather_Systems
 
                 return Vector3.zero;
             }
+
+            
         
         }
 
@@ -351,7 +324,7 @@ namespace Kerbal_Weather_Systems
                 line.SetWidth(1, 0);
                 line.SetVertexCount(2);
                 line.SetPosition(0, part.transform.position);
-                line.SetPosition(1, windDirection); //Draws the end point in the direction of the wind
+                line.SetPosition(1, part.transform.position + windDirection); //Draws the end point in the direction of the wind
                 
             
             
@@ -419,6 +392,7 @@ namespace Kerbal_Weather_Systems
                 }
             }
 
+
             if (GUI.Button(new Rect(140, 190, 120, 25), "ShowWind"))
             {
                 WindVectorLine();
@@ -464,22 +438,30 @@ namespace Kerbal_Weather_Systems
     
         void RainControls() //Rain Control Panel
         {
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("You hear the sounds of rain pitter-pattering upon your tin rooftop.");
+            GUILayout.EndHorizontal();
         }
 
         void CloudControls() //Cloud Control Panel
         {
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("You gaze up at the sky. 'Is that one shaped like a dog to you?'");
+            GUILayout.EndHorizontal();
         }
 
         void SnowControls() //Snow Control Panel
         {
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("'We're supposed to get a good 5cm, eh?'");
+            GUILayout.EndHorizontal();
         }
 
         void StormControls() //Storm Control Panel
         {
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("'Oh the impending dog howls...'");
+            GUILayout.EndHorizontal();
         }
 
         // Return the current instance of the server, if any.
