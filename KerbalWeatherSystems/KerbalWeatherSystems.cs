@@ -153,42 +153,42 @@ namespace Kerbal_Weather_Systems
 
                     case 1:
                         windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
-                        windDirection = -North * windSpeed;
+                        windDirection = North * windSpeed;
 
                         break;
                     case 2:
                         windDirectionLabel = "Easterly"; //Heading West: Wind going from East to West
-                        windDirection = -East * windSpeed;
+                        windDirection = East * windSpeed;
 
                         break;
                     case 3:
                         windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
-                        windDirection = North * windSpeed;
+                        windDirection = -North * windSpeed;
 
                         break;
                     case 4:
                         windDirectionLabel = "Westerly"; //Heading East: Wind going from West to East
-                        windDirection = East * windSpeed;
+                        windDirection = -East * windSpeed;
 
                         break;
                     case 5:
                         windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
-                        windDirection = (-North + -East).normalized * windSpeed;
+                        windDirection = (North + East).normalized * windSpeed;
 
                         break;
                     case 6:
                         windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
-                        windDirection = (North + -East).normalized * windSpeed;
+                        windDirection = (-North + East).normalized * windSpeed;
 
                         break;
                     case 7:
                         windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
-                        windDirection = (North + East).normalized * windSpeed;
+                        windDirection = (-North + -East).normalized * windSpeed;
 
                         break;
                     case 8:
                         windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
-                        windDirection = (-North + East).normalized * windSpeed;
+                        windDirection = (North + -East).normalized * windSpeed;
 
                         break;
                     default:
@@ -392,12 +392,12 @@ namespace Kerbal_Weather_Systems
                 }
             }
 
-
+            /*
             if (GUI.Button(new Rect(140, 190, 120, 25), "ShowWind"))
             {
                 WindVectorLine();
             }
-
+            */
                 
 
                 if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
