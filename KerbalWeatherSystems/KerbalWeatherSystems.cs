@@ -73,6 +73,12 @@ namespace Kerbal_Weather_Systems
 
         //Test Variables
         private LineRenderer line = null;
+        public float x;
+        public float y;
+        public float z;
+        public string xstring = "1";
+        public string ystring = "1";
+        public string zstring = "1";
         
         
         //private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KerbalWeatherSystems/Plugins/KerbalWeatherSystems.cfg"; } }
@@ -141,9 +147,9 @@ namespace Kerbal_Weather_Systems
 
                 Vector3 Up = vessel.upAxis; //get the up relative to the surface
                 Up.Normalize(); //normalize that shit
-                Vector3 East = Vector3.Cross(Up, vessel.mainBody.angularVelocity); //Get the East axis
+                Vector3 East = Vector3.Cross(vessel.mainBody.angularVelocity, Up); //Get the reverse East axis
                 East.Normalize(); //Normalize that shit
-                Vector3 North = Vector3.Cross(East, vessel.upAxis); //Get the north axis
+                Vector3 North = Vector3.Cross( vessel.upAxis, East); //Get the reverse north axis
                 North.Normalize();//Guess what? Normalize that shit
                 
 
@@ -153,42 +159,42 @@ namespace Kerbal_Weather_Systems
 
                     case 1:
                         windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
-                        windDirection = North * windSpeed;
+                        windDirection = -North * windSpeed;
 
                         break;
                     case 2:
                         windDirectionLabel = "Easterly"; //Heading West: Wind going from East to West
-                        windDirection = East * windSpeed;
+                        windDirection = -East * windSpeed;
 
                         break;
                     case 3:
                         windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
-                        windDirection = -North * windSpeed;
+                        windDirection = North * windSpeed;
 
                         break;
                     case 4:
                         windDirectionLabel = "Westerly"; //Heading East: Wind going from West to East
-                        windDirection = -East * windSpeed;
+                        windDirection = East * windSpeed;
 
                         break;
                     case 5:
                         windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
-                        windDirection = (North + East).normalized * windSpeed;
+                        windDirection = (-North + -East).normalized * windSpeed;
 
                         break;
                     case 6:
                         windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
-                        windDirection = (-North + East).normalized * windSpeed;
+                        windDirection = (North + -East).normalized * windSpeed;
 
                         break;
                     case 7:
                         windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
-                        windDirection = (-North + -East).normalized * windSpeed;
+                        windDirection = (North + East).normalized * windSpeed;
 
                         break;
                     case 8:
                         windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
-                        windDirection = (North + -East).normalized * windSpeed;
+                        windDirection = (-North + East).normalized * windSpeed;
 
                         break;
                     default:
@@ -204,13 +210,12 @@ namespace Kerbal_Weather_Systems
         public Vector3 windStuff(CelestialBody body, Part part, Vector3 position)
         {
             Vessel vessel = FlightGlobals.ActiveVessel;
-
-            Vector3 Up = vessel.upAxis;
-            Up.Normalize();
-            Vector3 East = Vector3.Cross(Up, vessel.mainBody.angularVelocity);
-            East.Normalize();
-            Vector3 North = Vector3.Cross(East, vessel.upAxis);
-            North.Normalize();
+            Vector3 Up = vessel.upAxis; //get the up relative to the surface
+            Up.Normalize(); //normalize that shit
+            Vector3 East = Vector3.Cross(vessel.mainBody.angularVelocity, Up); //Get the reverse East axis
+            East.Normalize(); //Normalize that shit
+            Vector3 North = Vector3.Cross(vessel.upAxis, East); //Get the reverse north axis
+            North.Normalize();//Guess what? Normalize that shit
 
             try
             {
@@ -261,47 +266,26 @@ namespace Kerbal_Weather_Systems
             HighestPressure = FlightGlobals.getStaticPressure(0.0); //gets the highest pressure of the body the ship is in the SOI of
             vesselHeight = FlightGlobals.ship_altitude; //sets the vessel height as the altitude of the ship
 
+            GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            GUILayout.Width(500);
+            GUILayout.Label("X"); xstring = GUILayout.TextField(xstring);
             GUILayout.EndHorizontal();
-
-            if (isWindowOpen == true)
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Y"); ystring = GUILayout.TextField(ystring);
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Z"); zstring = GUILayout.TextField(zstring);
+            GUILayout.EndHorizontal();
+            if (GUILayout.Button("Set"))
             {
-
-                if (GUILayout.Button("Minimize")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
-
-                showWindControls = GUILayout.Toggle(showWindControls, "Wind"); if (showWindControls) WindControls(); //Do the Toggle bullshittery, then Call the Wind Control Panel
-
-                showRainControls = GUILayout.Toggle(showRainControls, "Rain"); if (showRainControls) RainControls(); //Do the Toggle bullshittery, then Call the Rain Control Panel
-
-                showCloudControls = GUILayout.Toggle(showCloudControls, "Clouds"); if (showCloudControls) CloudControls(); //Do the Toggle bullshittery, then Call the Clouds Control Panel
-
-                showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); if (showSnowControls) SnowControls(); //Do the Toggle bullshittery, then Call the Snow Control Panel
-
-                showStormControls = GUILayout.Toggle(showStormControls, "Storms"); if (showStormControls) StormControls(); //Do the Toggle bullshittery, then Call the Storm Control Panel
-
-                GUI.DragWindow();
-
+                x = float.Parse(xstring);
+                y = float.Parse(ystring);
+                z = float.Parse(zstring);
+                //FARWind.SetWindFunction(windStuff);
             }
-            else if (isWindowOpen == false) //If the GUI is closed
-            {
-                ClosedGUI();
-            }
-        }
-
-        public void ClosedGUI()
-        {
-            GUILayout.Window(10, MainGUI, OnWindow, "KsW");
-            GUILayout.Height(0);
-            GUILayout.Width(0);
-            GUILayout.BeginHorizontal(GUILayout.Width(50));
-            if (GUILayout.Button("KsW")) { isWindowOpen = true; } //Button to re-open the GUI
-            GUILayout.BeginVertical(GUILayout.Height(50));
             GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
-            GUI.DragWindow();
-        }
 
+        }
         //Displays the wind vector as a line from the GUI.
         public void WindVectorLine()
         {
@@ -330,75 +314,12 @@ namespace Kerbal_Weather_Systems
             
         }
 
-        void WindControls() //Wind Control Panel
-        {
-            
-            if (GUI.Button(new Rect(10, 150, 150, 25), "Wind Speed Up")) //Turns up wind speed
-            {
-                windSpeed += 1.0f;
-            }
-
-            if (GUI.Button(new Rect(170, 150, 150, 25), "Wind Speed Down")) //Turns down wind speed
-            {
-                if (windSpeed > 0) //makes sure that you cant have negative windspeed
-                {
-                    windSpeed -= 1.0f;
-                }
-                else
-                    windSpeed -= 1.0f;
-            }
-
-            if (GUI.Button(new Rect(330, 150, 150, 25), "Wind Speed Zero")) //Zeroes wind speed
-            {
-                windSpeed = 0.0f;
-            }
-
-            if (GUI.Button(new Rect(490, 150, 125, 25), "Wind Direct.")) //Changes the wind direction
-            {
-                windDirectionNumb += 1;
-
-                if(windDirectionNumb == 9)
-                {
-                    windDirectionNumb = 1;
-                }
-            }
-
-            if (isWindAutomatic == false)
-            {
-                if (GUI.Button(new Rect(10, 190, 120, 25), "Automatic Wind")) //turns on/off automatic wind 
-                {
-                    if (isWindAutomatic == true)
-                    {
-                        isWindAutomatic = false;
-                    }
-                    else if (isWindAutomatic == false)
-                    {
-                        isWindAutomatic = true;
-                    }
-                }
-            }
-            else
-            {
-                if (GUI.Button(new Rect(10, 190, 120, 25), "Manual Wind"))
-                {
-                    if (isWindAutomatic == true)
-                    {
-                        isWindAutomatic = false;
-                    }
-                    else if (isWindAutomatic == false)
-                    {
-                        isWindAutomatic = true;
-                    }
-                }
-            }
-
             /*
             if (GUI.Button(new Rect(140, 190, 120, 25), "ShowWind"))
             {
                 WindVectorLine();
             }
-            */
-                
+                    
 
                 if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
                 {
@@ -436,34 +357,6 @@ namespace Kerbal_Weather_Systems
                 }
         }
     
-        void RainControls() //Rain Control Panel
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("You hear the sounds of rain pitter-pattering upon your tin rooftop.");
-            GUILayout.EndHorizontal();
-        }
-
-        void CloudControls() //Cloud Control Panel
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("You gaze up at the sky. 'Is that one shaped like a dog to you?'");
-            GUILayout.EndHorizontal();
-        }
-
-        void SnowControls() //Snow Control Panel
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("'We're supposed to get a good 5cm, eh?'");
-            GUILayout.EndHorizontal();
-        }
-
-        void StormControls() //Storm Control Panel
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("'Oh the impending dog howls...'");
-            GUILayout.EndHorizontal();
-        }
-
         // Return the current instance of the server, if any.
         /*
         public static FARWind Server
