@@ -24,7 +24,8 @@ namespace Kerbal_Weather_Systems
     public class KerbalWeatherSystems : MonoBehaviour
     {
         //Private variables
-        private static Rect MainGUI = new Rect(100,100,200,200);
+        private static Rect MainGUI = new Rect(100,100,200,180);
+        private static Rect WindGUI = new Rect(250,100,600,250);
 
 
         //Public variables
@@ -253,6 +254,7 @@ namespace Kerbal_Weather_Systems
         void OnGUI()
         {
             MainGUI = GUILayout.Window(10, MainGUI, OnWindow, "Weather~");
+            //WindGUI = GUILayout.Window(11, WindGUI, WindControls, "Wind Control");
         }
 
         // Called when the GUI window things happen
@@ -263,7 +265,7 @@ namespace Kerbal_Weather_Systems
             vesselHeight = FlightGlobals.ship_altitude; //sets the vessel height as the altitude of the ship
 
             GUILayout.BeginHorizontal();
-            GUILayout.Width(500);
+            GUILayout.Width(300);
             GUILayout.EndHorizontal();
 
             if (windSpeedString == null)
@@ -274,7 +276,7 @@ namespace Kerbal_Weather_Systems
             if (isWindowOpen == true)
             {
                 if (GUILayout.Button("Minimize")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
-                showWindControls = GUILayout.Toggle(showWindControls, "Wind"); if (showWindControls) WindControls(); //Do the Toggle bullshittery, then Call the Wind Control Panel
+                showWindControls = GUILayout.Toggle(showWindControls, "Wind"); if (showWindControls) { GUI.Window(11, WindGUI, WindControls, "Wind~"); } //Do the Toggle bullshittery, then Call the Wind Control Panel
                 showRainControls = GUILayout.Toggle(showRainControls, "Rain"); if (showRainControls) RainControls(); //Do the Toggle bullshittery, then Call the Rain Control Panel
                 showCloudControls = GUILayout.Toggle(showCloudControls, "Clouds"); if (showCloudControls) CloudControls(); //Do the Toggle bullshittery, then Call the Clouds Control Panel
                 showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); if (showSnowControls) SnowControls(); //Do the Toggle bullshittery, then Call the Snow Control Panel
@@ -327,7 +329,7 @@ namespace Kerbal_Weather_Systems
                 
         }
 
-        void WindControls() //Wind Control Panel
+        void WindControls(int WindID) //Wind Control Panel
         {
 
             /*
@@ -372,9 +374,6 @@ namespace Kerbal_Weather_Systems
                 //Zeroing wind speed block
                 GUILayout.BeginVertical();
                 if (GUILayout.Button("Wind Speed Zero"))  {windSpeed = 0.0f;}
-                GUILayout.EndVertical();
-
-                //Change of wind direction and automatic wind block
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Wind Direct.")) //Changes the wind direction
                 {
@@ -416,6 +415,7 @@ namespace Kerbal_Weather_Systems
                 }
 
                 GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
 
                 GUI.DragWindow();
             }
