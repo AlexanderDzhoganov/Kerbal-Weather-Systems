@@ -1,6 +1,8 @@
-﻿//Honourable Mentions and contributions to the code:
+﻿
+
+//Honourable Mentions and contributions to the code:
 //Cilph (he's an ass about it sometimes), TriggerAu (for helping me with a bunch of functionalities),
-//DYJ, Scott Manley, taniwha, Majiir, Ippo, 
+//DYJ, Scott Manley, taniwha, Majiir, Ippo,
 //Ferram for use of FARWIND code and API, as well as helping with coding.
 //And very much thanks for Chris_W for bugtesting intensively and helping out with the code bunches~
 //Very, very much thanks for use of code on Rbray's EVE mod, it really helps to get clouds going!
@@ -24,9 +26,12 @@ namespace Kerbal_Weather_Systems
     public class KerbalWeatherSystems : MonoBehaviour
     {
         //Private variables
-        private static Rect MainGUI = new Rect(100,100,200,180);
-        private static Rect WindGUI = new Rect(250,100,600,250);
-
+        private static Rect MainGUI = new Rect(100, 50, 150, 75);
+        private static Rect WindGUI = new Rect(250, 100, 250, 300);
+        private static Rect RainGUI = new Rect(250,100,200,75);
+        private static Rect CloudGUI = new Rect(250, 100, 200, 75);
+        private static Rect SnowGUI = new Rect(250, 100, 200, 75);
+        private static Rect StormGUI = new Rect(250, 100, 200, 75);
 
         //Public variables
 
@@ -61,13 +66,13 @@ namespace Kerbal_Weather_Systems
         //Floating point numbers
         public float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
         private float Anger = 9001.0f; //You've found my easter egg!
-        
+
         //Arrays
-        public string[] WindGUIButtons = new string[3] {"Upwind", "DownWind", "WindDirection"};
+        public string[] WindGUIButtons = new string[3] { "Upwind", "DownWind", "WindDirection" };
 
         //Vectors
         public Vector3 windDirection;
-        
+
         //Strings
         public String windDirectionLabel;
         public String windSpeedString = "1";
@@ -78,7 +83,13 @@ namespace Kerbal_Weather_Systems
         public float y;
         public float z;
 
-        
+        int windGUIID;
+        int mainGUIID;
+        int rainGUIID;
+        int snowGUIID;
+        int cloudsGUIID;
+        int stormGUIID;
+
         //private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KerbalWeatherSystems/Plugins/KerbalWeatherSystems.cfg"; } }
         /*
         * use the Awake() method instead of the constructor for initializing data because Unity uses
@@ -86,7 +97,7 @@ namespace Kerbal_Weather_Systems
         */
         public void KerbalWeatherSystemsMain()
         {
-            
+
         }
 
         /*
@@ -94,6 +105,12 @@ namespace Kerbal_Weather_Systems
 */
         void Awake()
         {
+            mainGUIID = Guid.NewGuid().GetHashCode();
+            windGUIID = Guid.NewGuid().GetHashCode();
+            rainGUIID = Guid.NewGuid().GetHashCode();
+            cloudsGUIID = Guid.NewGuid().GetHashCode();
+            stormGUIID = Guid.NewGuid().GetHashCode();
+           
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
             windDirectionNumb = Random.Range(1, 9); //Set wind direction
@@ -103,19 +120,19 @@ namespace Kerbal_Weather_Systems
             windSpeedString = string.Empty;
 
         }
-        
+
         //Called after Update()
         void LateUpdate()
         {
 
         }
-        
+
         /*
 * Called next.
 */
         void Start()
         {
-            
+
         }
 
         /*
@@ -123,10 +140,10 @@ namespace Kerbal_Weather_Systems
 */
         void Update()
         {
-            
+
         }
 
-        
+
         /*
 * Called at a fixed time interval determined by the physics time step.
 */
@@ -146,9 +163,9 @@ namespace Kerbal_Weather_Systems
                 Up.Normalize(); //normalize that shit
                 Vector3 East = Vector3.Cross(vessel.mainBody.angularVelocity, Up); //Get the reverse East axis
                 East.Normalize(); //Normalize that shit
-                Vector3 North = Vector3.Cross( vessel.upAxis, East); //Get the reverse north axis
+                Vector3 North = Vector3.Cross(vessel.upAxis, East); //Get the reverse north axis
                 North.Normalize();//Guess what? Normalize that shit
-                
+
 
                 //Defines the Wind Speed stuff
                 switch (windDirectionNumb)
@@ -202,7 +219,7 @@ namespace Kerbal_Weather_Systems
                 }
             }
         }
-    
+
         //Do ALL the wind things!
         public Vector3 windStuff(CelestialBody body, Part part, Vector3 position)
         {
@@ -226,8 +243,8 @@ namespace Kerbal_Weather_Systems
                 return Vector3.zero;
             }
 
-            
-        
+
+
         }
 
         public void Save(ConfigNode node)
@@ -245,16 +262,46 @@ namespace Kerbal_Weather_Systems
         }
 
         //Called when the drawing happens
-        private void OnDraw() 
+        private void OnDraw()
         {
-            
+
         }
 
         //Called when the GUI things happen
         void OnGUI()
         {
-            MainGUI = GUILayout.Window(10, MainGUI, OnWindow, "Weather~");
+            MainGUI = GUILayout.Window(mainGUIID, MainGUI, OnWindow, "Weather~");
             //WindGUI = GUILayout.Window(11, WindGUI, WindControls, "Wind Control");
+
+            if (showWindControls)
+            {
+
+                WindGUI = GUI.Window(windGUIID, WindGUI, WindControls, "Wind~");
+
+            }
+
+            if (showRainControls)
+            {
+
+                RainGUI = GUI.Window(rainGUIID, RainGUI, RainControls, "Rain~");
+
+            }
+
+            if (showCloudControls)
+            {
+                CloudGUI = GUI.Window(cloudsGUIID, CloudGUI, CloudControls, "Clouds~");
+            }
+
+            if (showSnowControls)
+            {
+                SnowGUI = GUI.Window(snowGUIID, SnowGUI, SnowControls, "Snow~");
+            }
+
+            if (showStormControls)
+            {
+                StormGUI = GUI.Window(stormGUIID,StormGUI, StormControls, "Storms~");
+            }
+
         }
 
         // Called when the GUI window things happen
@@ -275,12 +322,12 @@ namespace Kerbal_Weather_Systems
 
             if (isWindowOpen == true)
             {
-                if (GUILayout.Button("Minimize")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
-                showWindControls = GUILayout.Toggle(showWindControls, "Wind"); if (showWindControls) { GUI.Window(11, WindGUI, WindControls, "Wind~"); } //Do the Toggle bullshittery, then Call the Wind Control Panel
-                showRainControls = GUILayout.Toggle(showRainControls, "Rain"); if (showRainControls) RainControls(); //Do the Toggle bullshittery, then Call the Rain Control Panel
-                showCloudControls = GUILayout.Toggle(showCloudControls, "Clouds"); if (showCloudControls) CloudControls(); //Do the Toggle bullshittery, then Call the Clouds Control Panel
-                showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); if (showSnowControls) SnowControls(); //Do the Toggle bullshittery, then Call the Snow Control Panel
-                showStormControls = GUILayout.Toggle(showStormControls, "Storms"); if (showStormControls) StormControls(); //Do the Toggle bullshittery, then Call the Storm Control Panel
+                //if (GUILayout.Button("Minimize")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
+                showWindControls = GUILayout.Toggle(showWindControls, "Wind"); //Do the Toggle bullshittery, then Call the Wind Control Panel
+                showRainControls = GUILayout.Toggle(showRainControls, "Rain"); //Do the Toggle bullshittery, then Call the Rain Control Panel
+                showCloudControls = GUILayout.Toggle(showCloudControls, "Clouds"); //Do the Toggle bullshittery, then Call the Clouds Control Panel
+                showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); //Do the Toggle bullshittery, then Call the Snow Control Panel
+                showStormControls = GUILayout.Toggle(showStormControls, "Storms"); //Do the Toggle bullshittery, then Call the Storm Control Panel
                 GUI.DragWindow();
             }
 
@@ -288,6 +335,9 @@ namespace Kerbal_Weather_Systems
             {
                 ClosedGUI();
             }
+
+
+
         }
 
         public void ClosedGUI()
@@ -306,32 +356,38 @@ namespace Kerbal_Weather_Systems
         //Displays the wind vector as a line from the GUI.
         public void WindVectorLine()
         {
-            
-                // First of all, create a GameObject to which LineRenderer will be attached.
-                //GameObject obj = new GameObject("Line");
-                Part part = FlightGlobals.ActiveVessel.rootPart;
-                GameObject obj = new GameObject("Line");
-                // Then create renderer itself...
-                line = obj.AddComponent<LineRenderer>();
-                line.transform.parent = transform; // ...child to our part...
-                line.useWorldSpace = true; // ...and moving along with it (rather 
-                // than staying in fixed world coordinates)
-                line.transform.localPosition = Vector3.zero;
-                line.transform.localEulerAngles = Vector3.zero;
 
-                // Make it render a red to yellow triangle, 1 meter wide and 2 meters long
-                line.material = new Material(Shader.Find("Particles/Additive"));
-                line.SetColors(Color.red, Color.yellow);
-                line.SetWidth(1, 0);
-                line.SetVertexCount(2);
-                line.SetPosition(0, part.transform.position);
-                line.SetPosition(1, part.transform.position + windDirection); //Draws the end point in the direction of the wind
-                
+            // First of all, create a GameObject to which LineRenderer will be attached.
+            //GameObject obj = new GameObject("Line");
+            Part part = FlightGlobals.ActiveVessel.rootPart;
+            GameObject obj = new GameObject("Line");
+            // Then create renderer itself...
+            line = obj.AddComponent<LineRenderer>();
+            line.transform.parent = transform; // ...child to our part...
+            line.useWorldSpace = true; // ...and moving along with it (rather
+            // than staying in fixed world coordinates)
+            line.transform.localPosition = Vector3.zero;
+            line.transform.localEulerAngles = Vector3.zero;
+
+            // Make it render a red to yellow triangle, 1 meter wide and 2 meters long
+            line.material = new Material(Shader.Find("Particles/Additive"));
+            line.SetColors(Color.red, Color.yellow);
+            line.SetWidth(1, 0);
+            line.SetVertexCount(2);
+            line.SetPosition(0, part.transform.position);
+            line.SetPosition(1, part.transform.position + windDirection); //Draws the end point in the direction of the wind
+
         }
 
         void WindControls(int WindID) //Wind Control Panel
         {
+            //GUILayout.BeginHorizontal();
+            //if (GUILayout.Button("Minimize"))
+            //    Debug.Log("this!");
+            //GUILayout.EndHorizontal();
 
+
+            //GUI.DragWindow();
             /*
             if (GUI.Button(new Rect(140, 190, 120, 25), "ShowWind"))
             {
@@ -343,37 +399,40 @@ namespace Kerbal_Weather_Systems
             {
 
                 //Setting wind speed block
-                GUILayout.BeginHorizontal(GUILayout.Width(600));
+                GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                GUILayout.Label("Wind Speed:"); windSpeedString = GUILayout.TextField(windSpeedString); //Does the textfield for setting the wind.
+                GUILayout.Label("Wind Speed:"); windSpeedString = GUILayout.TextField(windSpeedString,15); //Does the textfield for setting the wind.
                 if (GUILayout.Button("Set"))
                 {
                     windSpeed = float.Parse(windSpeedString);
+
+                    if (windSpeedString == "") { windSpeedString = "0.00"; }
+
                 }
-                GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
 
                 //Main info block
                 GUILayout.BeginVertical();
-                GUILayout.BeginHorizontal();
+                //GUILayout.BeginHorizontal();
                 GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " m/s");
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
+                GUILayout.Label("Current Atmos. Pressure: " + Pressure.ToString("0.000"));
+                GUILayout.Label("Highest Atmos. Pressure: " + HighestPressure.ToString("0.000"));
                 GUILayout.Label("InAtmo? : True");
-                GUILayout.EndHorizontal();
-                GUILayout.EndVertical();
+                //GUILayout.EndHorizontal();
+                //GUILayout.EndVertical();
 
                 //Wind Direction Block
-                GUILayout.BeginVertical();
+                //GUILayout.BeginVertical();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Wind Direction: " + windDirectionLabel);
                 GUILayout.EndHorizontal();
-                GUILayout.EndVertical();
+                //GUILayout.EndVertical();
 
                 //Zeroing wind speed block
-                GUILayout.BeginVertical();
-                if (GUILayout.Button("Wind Speed Zero"))  {windSpeed = 0.0f;}
+                //GUILayout.BeginVertical();
+                if (GUILayout.Button("Wind Speed Zero")) { windSpeed = 0.0f; }
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Wind Direct.")) //Changes the wind direction
                 {
@@ -436,120 +495,93 @@ namespace Kerbal_Weather_Systems
                 GUILayout.EndHorizontal();
                 GUI.DragWindow();
             }
+
         }
 
-        void RainControls() //Rain Control Panel
+        void RainControls(int windowId) //Rain Control Panel
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label("You hear the sounds of rain pitter-pattering upon your tin rooftop.");
             GUILayout.EndHorizontal();
+            
+            GUI.DragWindow();
+
         }
 
-        void CloudControls() //Cloud Control Panel
+        void CloudControls(int windowId) //Cloud Control Panel
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label("You gaze up at the sky. 'Is that one shaped like a dog to you?'");
             GUILayout.EndHorizontal();
+
+            GUI.DragWindow();
+
         }
 
-        void SnowControls() //Snow Control Panel
+        void SnowControls(int windowId) //Snow Control Panel
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label("'We're supposed to get a good 5cm, eh?'");
             GUILayout.EndHorizontal();
+
+            GUI.DragWindow();
+
         }
 
-        void StormControls() //Storm Control Panel
+        void StormControls(int windowId) //Storm Control Panel
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label("'Oh the impending dog howls...'");
             GUILayout.EndHorizontal();
+
+            GUI.DragWindow();
+
         }
 
-            /*
-            if (GUI.Button(new Rect(140, 190, 120, 25), "ShowWind"))
-            {
-                WindVectorLine();
-            }
-                    
-
-                if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
-                {
-                    
-                    GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " m/s");
-                    GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                    GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                    GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
-                    GUILayout.Label("InAtmo? : True");
-                    GUILayout.EndHorizontal();
-                    GUILayout.BeginVertical(GUILayout.Height(100));
-                    GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Wind Direction: " + windDirectionLabel);
-                    GUILayout.EndHorizontal();
-                    GUILayout.EndVertical();
-                    GUI.DragWindow();
-
-                }
-                else //if we are not in an atmosphere, show the non atmo GUI
-                {
-                    GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Windspeed: " + "0" + " m/s");
-                    GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                    GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                    GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
-                    GUILayout.Label("InAtmo? : False");
-                    GUILayout.EndHorizontal();
-                    GUILayout.BeginVertical(GUILayout.Height(100));
-                    GUILayout.BeginHorizontal(GUILayout.Width(600));
-                    GUILayout.Label("Wind Direction: N/a");
-                    GUILayout.EndVertical();
-                    GUILayout.EndHorizontal();
-                    GUI.DragWindow();
-                }
-        }
-    
-        // Return the current instance of the server, if any.
-        /*
-        public static FARWind Server
+        
+       
+    // Return the current instance of the server, if any.
+    /*
+    public static FARWind Server
+    {
+        get
         {
-            get
+            if (FARWindInstalled)
             {
-                if (FARWindInstalled)
-                {
-                    object instance = serverType
-                    .GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)
-                    .GetValue(null, null);
-                    return (FARWind)DuckTyping.Cast(typeof(FARWind), instance);
-                }
-                else
-                    return null;
+                object instance = serverType
+                .GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)
+                .GetValue(null, null);
+                return (FARWind)DuckTyping.Cast(typeof(FARWind), instance);
             }
-         
+            else
+                return null;
         }
-
-        //Finds the server type of the assembly
-        private static Type FindServerType()
+             
+    }
+     
+    //Finds the server type of the assembly
+    private static Type FindServerType()
+    {
+        return AssemblyLoader.loadedAssemblies
+        .SelectMany(a => a.assembly.GetExportedTypes())
+        .SingleOrDefault(t => t.FullName == "ferram4.FARWind");
+    }
+     
+    /// Checks if FARWind is installed and can be located
+    public static bool FARWindInstalled
+    {
+        get
         {
-            return AssemblyLoader.loadedAssemblies
-            .SelectMany(a => a.assembly.GetExportedTypes())
-            .SingleOrDefault(t => t.FullName == "ferram4.FARWind");
-        }
-
-        /// Checks if FARWind is installed and can be located
-        public static bool FARWindInstalled
-        {
-            get
+            if (installed == null)
             {
-                if (installed == null)
-                {
-                    serverType = FindServerType();
-                    installed = !(serverType == null);
-                }
-                return (bool)installed;
+                serverType = FindServerType();
+                installed = !(serverType == null);
             }
+            return (bool)installed;
         }
-
-         */
+    }
+     
+     */
     }
 }
+
