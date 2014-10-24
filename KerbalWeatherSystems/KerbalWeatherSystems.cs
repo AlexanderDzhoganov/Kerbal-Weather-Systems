@@ -26,12 +26,13 @@ namespace Kerbal_Weather_Systems
     public class KerbalWeatherSystems : MonoBehaviour
     {
         //Private variables
-        private static Rect MainGUI = new Rect(100, 50, 150, 75);
+        private static Rect MainGUI = new Rect(100, 50, 100, 75);
         private static Rect WindGUI = new Rect(250, 100, 250, 300);
         private static Rect RainGUI = new Rect(250,100,200,75);
         private static Rect CloudGUI = new Rect(250, 100, 200, 75);
         private static Rect SnowGUI = new Rect(250, 100, 200, 75);
         private static Rect StormGUI = new Rect(250, 100, 200, 75);
+        private Rect WindSettingsGUI = new Rect(WindGUI.xMax, WindGUI.yMin + 50, 100, 125);
 
         //Public variables
 
@@ -51,9 +52,17 @@ namespace Kerbal_Weather_Systems
         //private static Type serverType = null; //The server stuff for the assembly version.
         //private static bool? installed = null; //Checks if FARWind is installed
         public bool showWindLines = false;
+        public bool showWindSpeedSettings = false;
 
         //Integers
         public int windDirectionNumb;
+        int windGUIID;
+        int mainGUIID;
+        int rainGUIID;
+        int snowGUIID;
+        int cloudsGUIID;
+        int stormGUIID;
+        int windSettingsGUIID;
 
         //Singles
 
@@ -65,10 +74,10 @@ namespace Kerbal_Weather_Systems
 
         //Floating point numbers
         public float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
-        private float Anger = 9001.0f; //You've found my easter egg!
+        //private float Anger = 9001.0f; //You've found my easter egg!
 
         //Arrays
-        public string[] WindGUIButtons = new string[3] { "Upwind", "DownWind", "WindDirection" };
+        
 
         //Vectors
         public Vector3 windDirection;
@@ -79,16 +88,14 @@ namespace Kerbal_Weather_Systems
 
         //Test Variables
         private LineRenderer line = null;
-        public float x;
-        public float y;
-        public float z;
 
-        int windGUIID;
-        int mainGUIID;
-        int rainGUIID;
-        int snowGUIID;
-        int cloudsGUIID;
-        int stormGUIID;
+        //Windspeed settings
+        public string WindSpeedSettingsString = "m/s";
+        public float mps;
+        public float kernauts;
+        public float kmh;
+        public float knots;
+
 
         //private static String File { get { return KSPUtil.ApplicationRootPath + "/GameData/KerbalWeatherSystems/Plugins/KerbalWeatherSystems.cfg"; } }
         /*
@@ -105,11 +112,14 @@ namespace Kerbal_Weather_Systems
 */
         void Awake()
         {
+            //GUI id hashcodes
             mainGUIID = Guid.NewGuid().GetHashCode();
             windGUIID = Guid.NewGuid().GetHashCode();
             rainGUIID = Guid.NewGuid().GetHashCode();
             cloudsGUIID = Guid.NewGuid().GetHashCode();
             stormGUIID = Guid.NewGuid().GetHashCode();
+            snowGUIID = Guid.NewGuid().GetHashCode();
+            windSettingsGUIID = Guid.NewGuid().GetHashCode();
            
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
@@ -302,6 +312,13 @@ namespace Kerbal_Weather_Systems
                 StormGUI = GUI.Window(stormGUIID,StormGUI, StormControls, "Storms~");
             }
 
+            if(showWindSpeedSettings)
+            {
+                Rect WindSettingsGUI = new Rect(WindGUI.xMax, WindGUI.yMin + 50, 100, 125);
+                WindSettingsGUI = GUI.Window(windSettingsGUIID, WindSettingsGUI, WindSettings, "WindSettings~");
+
+            }
+
         }
 
         // Called when the GUI window things happen
@@ -398,24 +415,24 @@ namespace Kerbal_Weather_Systems
             if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
             {
 
+                if (windSpeedString == "") { windSpeedString = "0.00"; }
+
                 //Setting wind speed block
-                GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
                 GUILayout.Label("Wind Speed:"); windSpeedString = GUILayout.TextField(windSpeedString,15); //Does the textfield for setting the wind.
-                if (GUILayout.Button("Set"))
-                {
-                    windSpeed = float.Parse(windSpeedString);
-
-                    if (windSpeedString == "") { windSpeedString = "0.00"; }
-
-                }
                 GUILayout.EndVertical();
+
+                GUILayout.BeginVertical();
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Set")) { windSpeed = float.Parse(windSpeedString); }
+                if (GUILayout.Button("Settings")) { if (showWindSpeedSettings) { showWindSpeedSettings = false; } else { showWindSpeedSettings = true; } }
                 GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
 
                 //Main info block
                 GUILayout.BeginVertical();
                 //GUILayout.BeginHorizontal();
-                GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + " m/s");
+                GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + WindSpeedSettingsString);
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("Current Atmos. Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmos. Pressure: " + HighestPressure.ToString("0.000"));
@@ -482,7 +499,7 @@ namespace Kerbal_Weather_Systems
             else //if we are not in an atmosphere, show the non atmo GUI
             {
                 GUILayout.BeginHorizontal(GUILayout.Width(600));
-                GUILayout.Label("Windspeed: " + "0" + " m/s");
+                GUILayout.Label("Windspeed: " + "0" + WindSpeedSettingsString);
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
@@ -496,6 +513,52 @@ namespace Kerbal_Weather_Systems
                 GUI.DragWindow();
             }
 
+        }
+
+        void WindSettings(int windowId)
+        {
+            GUILayout.BeginVertical();
+
+            if (GUILayout.Button("m/s")) { WindSpeedSettingsString = " m/s"; }
+            if (GUILayout.Button("kernauts")) { WindSpeedSettingsString = " kernauts"; }
+            if (GUILayout.Button("knots")) { WindSpeedSettingsString = " knots"; }
+            if (GUILayout.Button("km/h")) { WindSpeedSettingsString = " km/h"; }
+
+            GUILayout.EndVertical();
+            GUI.DragWindow();
+        }
+
+        float WindSpeedSettings(String windSpeedString)
+        {
+            switch(WindSpeedSettingsString)
+            {
+                case "m/s" :
+
+                    windSpeed = float.Parse(windSpeedString);
+                    break;
+
+                case "kernauts": //1 kernaut = 0.174532952 km/h = 0.048481375555 m/s
+
+                    windSpeed = (float.Parse(windSpeedString) * 0.048481375555f); //Take input and convert to kernauts.
+                    break;
+
+                case "knots": //1 knot = 1.852 km/h = 0.514444444m/s
+
+                    windSpeed = (float.Parse(windSpeedString) * 0.514444444f);
+                    break;
+
+                case "km/h": //1 km/h = 0.277778m/s
+
+                    windSpeed = (float.Parse(windSpeedString) * 0.277778f);
+                    break;
+
+                default:
+
+                    WindSpeedSettingsString = "m/s";
+                    break;
+
+            }
+            return windSpeed;
         }
 
         void RainControls(int windowId) //Rain Control Panel
@@ -584,4 +647,3 @@ namespace Kerbal_Weather_Systems
      */
     }
 }
-
