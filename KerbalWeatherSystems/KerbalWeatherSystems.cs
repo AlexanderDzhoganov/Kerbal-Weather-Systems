@@ -432,7 +432,7 @@ namespace Kerbal_Weather_Systems
                 //Main info block
                 GUILayout.BeginVertical();
                 //GUILayout.BeginHorizontal();
-                GUILayout.Label("Windspeed: " + (windSpeed).ToString("0.00") + WindSpeedSettingsString);
+                GUILayout.Label("Windspeed: " + (WindSpeedSettings(windSpeedString)).ToString("0.00") + WindSpeedSettingsString);
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("Current Atmos. Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmos. Pressure: " + HighestPressure.ToString("0.000"));
@@ -519,10 +519,10 @@ namespace Kerbal_Weather_Systems
         {
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("m/s")) { WindSpeedSettingsString = " m/s"; }
-            if (GUILayout.Button("kernauts")) { WindSpeedSettingsString = " kernauts"; }
-            if (GUILayout.Button("knots")) { WindSpeedSettingsString = " knots"; }
-            if (GUILayout.Button("km/h")) { WindSpeedSettingsString = " km/h"; }
+            if (GUILayout.Button("m/s")) { WindSpeedSettingsString = " m/s"; WindSpeedSettings(windSpeedString); }
+            if (GUILayout.Button("kernauts")) { WindSpeedSettingsString = " kernauts"; WindSpeedSettings(windSpeedString); }
+            if (GUILayout.Button("knots")) { WindSpeedSettingsString = " knots"; WindSpeedSettings(windSpeedString); }
+            if (GUILayout.Button("km/h")) { WindSpeedSettingsString = " km/h"; WindSpeedSettings(windSpeedString); }
 
             GUILayout.EndVertical();
             GUI.DragWindow();
