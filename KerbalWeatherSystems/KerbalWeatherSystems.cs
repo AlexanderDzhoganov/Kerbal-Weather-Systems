@@ -315,7 +315,7 @@ namespace Kerbal_Weather_Systems
             if(showWindSpeedSettings)
             {
                 Rect WindSettingsGUI = new Rect(WindGUI.xMax, WindGUI.yMin + 50, 100, 125);
-                WindSettingsGUI = GUI.Window(windSettingsGUIID, WindSettingsGUI, WindSettings, "WindSettings~");
+               // WindSettingsGUI = GUI.Window(windSettingsGUIID, WindSettingsGUI, WindSettings, "WindSettings~");
 
             }
 
@@ -425,14 +425,14 @@ namespace Kerbal_Weather_Systems
                 GUILayout.BeginVertical();
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Set")) { windSpeed = float.Parse(windSpeedString); }
-                if (GUILayout.Button("Settings")) { if (showWindSpeedSettings) { showWindSpeedSettings = false; } else { showWindSpeedSettings = true; } }
+                //if (GUILayout.Button("Settings")) { if (showWindSpeedSettings) { showWindSpeedSettings = false; } else { showWindSpeedSettings = true; } }
                 GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
 
                 //Main info block
                 GUILayout.BeginVertical();
                 //GUILayout.BeginHorizontal();
-                GUILayout.Label("Windspeed: " + (WindSpeedSettings(windSpeedString)).ToString("0.00") + WindSpeedSettingsString);
+                GUILayout.Label("Windspeed: " + (windSpeed.ToString("0.00")) + " m/s");
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
                 GUILayout.Label("Current Atmos. Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmos. Pressure: " + HighestPressure.ToString("0.000"));
@@ -515,6 +515,7 @@ namespace Kerbal_Weather_Systems
 
         }
 
+        /*
         void WindSettings(int windowId)
         {
             GUILayout.BeginVertical();
@@ -528,39 +529,42 @@ namespace Kerbal_Weather_Systems
             GUI.DragWindow();
         }
 
-        float WindSpeedSettings(String windSpeedString)
+        /*
+        String WindSpeedSettings(String windSpeedSettingsString)
         {
             switch(WindSpeedSettingsString)
             {
-                case "m/s" :
+                case " m/s" :
 
-                    windSpeed = float.Parse(windSpeedString);
+                    windSpeedString = float.Parse(windSpeedString).ToString("0.0000000");
                     break;
 
-                case "kernauts": //1 kernaut = 0.174532952 km/h = 0.048481375555 m/s
+                case " kernauts": //1 kernaut = 0.174532952 km/h = 0.048481375555 m/s
 
-                    windSpeed = (float.Parse(windSpeedString) * 0.048481375555f); //Take input and convert to kernauts.
+                    windSpeedString = (float.Parse(windSpeedString) * 0.048481375555f).ToString("0.0000000"); //Take input and convert to kernauts.
                     break;
 
-                case "knots": //1 knot = 1.852 km/h = 0.514444444m/s
+                case " knots": //1 knot = 1.852 km/h = 0.514444444m/s
 
-                    windSpeed = (float.Parse(windSpeedString) * 0.514444444f);
+                    windSpeedString = (float.Parse(windSpeedString) * 0.514444444f).ToString("0.0000000");
                     break;
 
-                case "km/h": //1 km/h = 0.277778m/s
+                case " km/h": //1 km/h = 0.277778m/s
 
-                    windSpeed = (float.Parse(windSpeedString) * 0.277778f);
+                    windSpeedString = (float.Parse(windSpeedString) * 0.277778f).ToString("0.0000000");
                     break;
 
                 default:
 
-                    WindSpeedSettingsString = "m/s";
+                    WindSpeedSettingsString = " m/s";
                     break;
 
             }
-            return windSpeed;
+            return windSpeedString;
         }
-
+        */
+          
+          
         void RainControls(int windowId) //Rain Control Panel
         {
             GUILayout.BeginHorizontal();

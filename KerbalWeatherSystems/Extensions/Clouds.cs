@@ -47,11 +47,13 @@ namespace KerbalWeatherSystems.Extensions
                 {
                     scaledCloudMaterial.ApplyMaterialProperties(CloudMaterial); //Apply the materialistic properties
                     float scale = (float)(1000f / celestialBody.Radius); 
+                    CloudMaterial.DisableKeyword("SOFT_DEPTH_ON");
                     Reassign(EVEManagerClass.SCALED_LAYER, scaledCelestialTransform, scale);
                 }
                 else //Set the macrocloud material
                 {
                     macroCloudMaterial.ApplyMaterialProperties(CloudMaterial); //apply the macro material properties.
+                    CloudMaterial.EnableKeyword("SOFT_DEPTH_ON");
                     Reassign(EVEManagerClass.MACRO_LAYER, celestialBody.transform, 1); //reassign
                 }
             }
@@ -73,7 +75,7 @@ namespace KerbalWeatherSystems.Extensions
                 if (cloudShader == null) //If there is no cloudShader loaded.
                 {
                     Assembly assembly = Assembly.GetExecutingAssembly(); //Currently executing assembly.
-                    //cloudShader = EVEManagerClass.GetShader(assembly, "Atmosphere.Shaders.Compiled-SphereCloud.shader"); //get the shader from the assembly
+                    cloudShader = Clouds2D.GetShader(assembly, "Atmosphere.Shaders.Compiled-SphereCloud.shader"); //get the shader from the assembly
                 } 
                 return cloudShader; //return the cloud shader.
             }
