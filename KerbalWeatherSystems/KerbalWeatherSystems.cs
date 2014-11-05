@@ -1,6 +1,4 @@
-﻿
-
-//Honourable Mentions and contributions to the code:
+﻿//Honourable Mentions and contributions to the code:
 //Cilph (he's an ass about it sometimes), TriggerAu (for helping me with a bunch of functionalities),
 //DYJ, Scott Manley, taniwha, Majiir, Ippo,
 //Ferram for use of FARWIND code and API, as well as helping with coding.
@@ -15,7 +13,7 @@ using System.Reflection;
 using UnityEngine;
 using KSP.IO;
 using ferram4;
-using KerbalWeatherSystems.Extensions;
+using Atmosphere;
 
 using Random = UnityEngine.Random;
 

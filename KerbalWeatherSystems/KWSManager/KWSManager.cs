@@ -10,7 +10,7 @@ using Utils;
 namespace KWSManager
 {
     [KSPAddon(KSPAddon.Startup.EveryScene, false)]
-    public class KWSManagerClass : MonoBehaviour //INamed
+    public class KWSManagerClass : MonoBehaviour, INamed
     {
 
         protected virtual bool sceneLoad { get { return HighLogic.LoadedScene == GameScenes.MAINMENU || HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION; } }
@@ -93,7 +93,7 @@ namespace KWSManager
             float width = _mainWindowRect.width - 10;
             float height = _mainWindowRect.height - 10;
             Rect placementBase = new Rect(10, 25, width, height);
-            /*
+            
             currentManager = GUIHelper.DrawSelector<KWSManagerClass>(Managers, ref selectedManagerIndex, 4, placementBase, ref placement);
             
             if (currentManager != null)
@@ -102,7 +102,7 @@ namespace KWSManager
             }
              
             GUI.DragWindow(new Rect(0, 0, 10000, 10000));
-             */ 
+             
         }
 
         public virtual void DrawGUI(Rect val, Rect val2)

@@ -1,0 +1,52 @@
+﻿//Code copied from Rbray's mod EVE, all proper credits go to him for such hard work
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+
+namespace Utils
+{
+    public static class Quad
+    {
+        public static void Create(GameObject gameObject, float size, Color color, Vector3 up)
+        {
+            MeshFilter filter = gameObject.AddComponent<MeshFilter>();
+            Mesh mesh = filter.mesh;
+            mesh.Clear();
+            mesh.vertices = new Vector3[4]
+            {
+                new Vector3(-.5f,-.5f,0)*size,
+                new Vector3(-.5f,.5f,0)*size,
+                new Vector3(.5f,-.5f,0)*size,
+                new Vector3(.5f,.5f,0)*size
+            };
+            mesh.triangles = new int[] { 1, 3, 2, 2, 0, 1 };
+            mesh.uv = new Vector2[4]
+            {
+                new Vector2(0,0),
+                new Vector2(0,1),
+                new Vector2(1,0),
+                new Vector2(1,1)
+            };
+            mesh.normals = new Vector3[4]
+            {
+                up,
+                up,
+                up,
+                up
+            };
+            mesh.colors = new Color[4]
+            {
+                new Color(color.r, color.g, color.b, color.a),
+                new Color(color.r, color.g, color.b, color.a),
+                new Color(color.r, color.g, color.b, color.a),
+                new Color(color.r, color.g, color.b, color.a)
+            };
+            Tools.CalculateMeshTangents(mesh);
+            mesh.RecalculateBounds();
+            mesh.Optimize();
+        }
+    }
+}
