@@ -6,15 +6,46 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 using KSP.IO;
+using Utils;
+using KWSManager;
 
 using Random = UnityEngine.Random;
 
 namespace KerbalWeatherSystems.Extensions
 {
 
-    public class Clouds2DMaterial
+    public class Clouds2DMaterial : KWSMaterialManager
     {
         //Material data goes here
+        [Persistent]
+        Color _Color = new Color(1, 1, 1, 1);
+        [Persistent]
+        String _MainTex = "";
+        [Persistent]
+        String _DetailTex = "";
+        [Persistent]
+        float _FalloffPow = 2f;
+        [Persistent]
+        float _FalloffScale = 3f;
+        [Persistent]
+        float _DetailScale = 100f;
+        [Persistent]
+        Vector3 _DetailOffset = new Vector3(0, 0, 0);
+        [Persistent]
+        float _DetailDist = 0.000002f;
+        [Persistent]
+        float _MinLight = .5f;
+        [Persistent]
+        float _FadeDist = 8f;
+        [Persistent]
+        float _FadeScale = 0.00375f;
+        [Persistent]
+        float _RimDist = 0.0001f;
+        [Persistent]
+        float _RimDistSub = 1.01f;
+        [Persistent]
+        float _InvFade = .008f;
+        
     }
 
     class Clouds2D
@@ -29,7 +60,7 @@ namespace KerbalWeatherSystems.Extensions
         [Persistent]
         Vector3 offset = new Vector3(0, 0, 0); //the offset of the texture
         [Persistent]
-        bool shadow = false; //shadows?
+        bool shadow = true; //shadows?
         [Persistent]
         Vector3 shadowOffset = new Vector3(0, 0, 0); //offset of the shadows
         [Persistent]
@@ -37,35 +68,37 @@ namespace KerbalWeatherSystems.Extensions
         [Persistent]
         Clouds2DMaterial scaledCloudMaterial; //Small scale cloud material
 
-        /*
+        bool isScaled = false;
         public bool Scaled //Scaled layer things
         {
-            get { return CloudMesh.layer == SCALED_LAYER; } //get and return the scaled layer (EVE's = 10)
+            get { return CloudMesh.layer == KWSManagerClass.SCALED_LAYER; } //get and return the scaled layer (EVE's = 10)
             set //set the value
             {
-                if (value) //if there is a value
+                if (isScaled != value) //if there is a value
                 {
                     scaledCloudMaterial.ApplyMaterialProperties(CloudMaterial); //Apply the materialistic properties
                     float scale = (float)(1000f / celestialBody.Radius); 
                     CloudMaterial.DisableKeyword("SOFT_DEPTH_ON");
-                    Reassign(EVEManagerClass.SCALED_LAYER, scaledCelestialTransform, scale);
+                    Reassign(KWSManager.KWSManagerClass.SCALED_LAYER, scaledCelestialTransform, scale);
                 }
                 else //Set the macrocloud material
                 {
                     macroCloudMaterial.ApplyMaterialProperties(CloudMaterial); //apply the macro material properties.
                     CloudMaterial.EnableKeyword("SOFT_DEPTH_ON");
-                    Reassign(EVEManagerClass.MACRO_LAYER, celestialBody.transform, 1); //reassign
+                    Reassign(KWSManager.KWSManagerClass.MACRO_LAYER, celestialBody.transform, 1); //reassign
                 }
+                isScaled = value;
             }
         }
-         */
+         
         CelestialBody celestialBody = null; 
         Transform scaledCelestialTransform = null; //Set the scaled Celestialbody transform
         Transform sunTransform; //Set the transform in relation to the sun?
         float radius; //Radius of the main body to use as a ratio to set the layer height.
         float radiusScale; //The scaled ratio of the body radius?
-        float globalPeriod; 
+        float globalPeriod; //The global period of things?
         float mainPeriodOffset; //The offset of the main period
+        float shadowPeriod; //the period of the shadow
 
         private static Shader cloudShader = null; //Material shader for the cloud.
         private static Shader CloudShader //Function to get and set the cloud shader.
@@ -75,7 +108,7 @@ namespace KerbalWeatherSystems.Extensions
                 if (cloudShader == null) //If there is no cloudShader loaded.
                 {
                     Assembly assembly = Assembly.GetExecutingAssembly(); //Currently executing assembly.
-                    cloudShader = Clouds2D.GetShader(assembly, "Atmosphere.Shaders.Compiled-SphereCloud.shader"); //get the shader from the assembly
+                    cloudShader = KWSManager.KWSManagerClass.GetShader(assembly, "Atmosphere.Shaders.Compiled-SphereCloud.shader"); //get the shader from the assembly
                 } 
                 return cloudShader; //return the cloud shader.
             }
@@ -89,7 +122,7 @@ namespace KerbalWeatherSystems.Extensions
                 if (cloudShadowShader == null) //If the cloudShadowShader is null
                 {
                     Assembly assembly = Assembly.GetExecutingAssembly(); //Currently executing assembly.
-                    //cloudShadowShader = EVEManagerClass.GetShader(assembly, "Atmosphere.Shaders.Compiled-CloudShadow.shader"); //Get and set the cloudshadow shader from the assembly
+                    cloudShadowShader = KWSManagerClass.GetShader(assembly, "Atmosphere.Shaders.Compiled-CloudShadow.shader"); //Get and set the cloudshadow shader from the assembly
                 } 
                 return cloudShadowShader; //Returns the cloudShadowShader.
             }
@@ -109,6 +142,7 @@ namespace KerbalWeatherSystems.Extensions
             float circumference = 2f * Mathf.PI * radius;
             globalPeriod = (speed + detailSpeed) / circumference;
             mainPeriodOffset = (-detailSpeed) / circumference; //The main offset of the period
+            shadowPeriod = (speed) / circumference; //sets the shadow period
 
             if (shadow) //If shadows are true
             {
@@ -131,6 +165,7 @@ namespace KerbalWeatherSystems.Extensions
             CloudMesh.transform.localPosition = Vector3.zero; //zeroes for localposition
             CloudMesh.transform.localScale = scale * Vector3.one; //Sets the transform scale
             CloudMesh.layer = layer;
+
             radiusScale = radius * scale; //scales the radius
             float worldRadiusScale = Vector3.Distance(parent.transform.TransformPoint(Vector3.up * radiusScale), parent.transform.TransformPoint(Vector3.zero)); //gets the scale of the world radius
 
@@ -139,24 +174,25 @@ namespace KerbalWeatherSystems.Extensions
                 float dist = (float)(2 * worldRadiusScale);
                 ShadowProjector.farClipPlane = dist;
                 ShadowProjector.orthographicSize = worldRadiusScale; //sets the scale of the world radius.
+
                 ShadowProjector.transform.parent = parent;
-                //ShadowProjector.transform.localScale = scale * Vector3.one;
+                //ShadowProjector.transform.localScale = scale * Vector3.one; //commented out for a reason.
                 ShadowProjector.material.SetTexture("_ShadowTex", CloudMaterial.mainTexture); //set the shadow texture
                 ShadowProjectorGO.layer = layer; //sets the shadowprojector gameobject's layer as the cloud mesh layer.
-                /*
-                if (layer == EVEManagerClass.MACRO_LAYER) //if the layer is = the macro layer
+                
+                if (layer == KWSManagerClass.MACRO_LAYER) //if the layer is = the macro layer
                 {
                     ShadowProjector.ignoreLayers = ~((1 << 19) | (1 << 15) | 2 | 1); //layers to ignore
-                    sunTransform = EVEManagerClass.GetCelestialBody(Sun.Instance.sun.bodyName).transform; //Sun transform
+                    sunTransform = KWSManagerClass.GetCelestialBody(Sun.Instance.sun.bodyName).transform; //Sun transform
                 }
                 else //set the layer as the second scaled layer
                 {
-                    ShadowProjectorGO.layer = EVEManagerClass.SCALED_LAYER2;
-                    ShadowProjector.ignoreLayers = ~(1 << EVEManagerClass.SCALED_LAYER2);// ~((1 << 29) | (1 << 23) | (1 << 18) | (1 << 10) | (1 << 9));
-                    sunTransform = EVEManagerClass.GetScaledTransform(Sun.Instance.sun.bodyName);
-                    AtmosphereManager.Log("Camera mask: " + ScaledCamera.Instance.camera.cullingMask);
+                    ShadowProjectorGO.layer = KWSManagerClass.SCALED_LAYER2;
+                    ShadowProjector.ignoreLayers = ~(1 << KWSManagerClass.SCALED_LAYER2);// ~((1 << 29) | (1 << 23) | (1 << 18) | (1 << 10) | (1 << 9));
+                    sunTransform = KWSManagerClass.GetScaledTransform(Sun.Instance.sun.bodyName);
+                    //Atmosphere.Log("Camera mask: " + ScaledCamera.Instance.camera.cullingMask);
                 }
-                 */
+                 
             }
         }
 
@@ -205,7 +241,7 @@ namespace KerbalWeatherSystems.Extensions
             Quaternion rotationForMatrix = CloudMesh.transform.localRotation;
             CloudMesh.transform.localRotation = rotation;
             Matrix4x4 mtrx = Matrix4x4.TRS(Vector3.zero, rotationForMatrix, new Vector3(1, 1, 1));
-            //CloudMaterial.SetMatrix(EVEManagerClass.ROTATION_PROPERTY, mtrx); //Sets the matrix
+            CloudMaterial.SetMatrix(KWSManagerClass.ROTATION_PROPERTY, mtrx); //Sets the matrix
         }
 
         //Sets the Texture Offset
@@ -215,13 +251,13 @@ namespace KerbalWeatherSystems.Extensions
             double x = (ut * mainPeriodOffset);
             x -= (int)x; //does the rotating of x axis
             Vector2 texOffset = new Vector2((float)x + offset.x, offset.y); //2D texture offset by period
-            //CloudMaterial.SetVector(EVEManagerClass.MAINOFFSET_PROPERTY, texOffset);
+            CloudMaterial.SetVector(KWSManagerClass.MAINOFFSET_PROPERTY, texOffset);
 
             if (ShadowProjector != null)
             {
                 Vector4 texVect = ShadowProjector.transform.localPosition.normalized;
-                //texVect.w = -(float)x; //rotate the texture on the x axis.
-                //ShadowProjector.material.SetVector(EVEManagerClass.SHADOWOFFSET_PROPERTY, texVect);
+                texVect.w = -(float)x; //rotate the texture on the x axis.
+                ShadowProjector.material.SetVector(KWSManagerClass.SHADOWOFFSET_PROPERTY, texVect);
             }
         }
     }
