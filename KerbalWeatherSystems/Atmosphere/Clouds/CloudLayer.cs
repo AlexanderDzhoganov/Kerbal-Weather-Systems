@@ -42,7 +42,7 @@ namespace Clouds
             {
                 if (CloudLayer.GlobalCloudParticleShader == null)
                 {
-                    OverlayManager.Log("Initializing Textures");
+                    OverlayManager.Log("Initializing Textures...");
                     Assembly assembly = Assembly.GetExecutingAssembly();
                     StreamReader shaderStreamReader = new StreamReader(assembly.GetManifestResourceStream("Kerbal Weather Systems.Atmosphere.Clouds.Shaders.Compiled-CloudParticle.shader"));
                     OverlayManager.Log("reading stream...");
@@ -76,6 +76,7 @@ namespace Clouds
         public ShaderFloats ScaledShaderFloats { get { return scaledShaderFloats; } }
         public ShaderFloats ShaderFloats { get { return shaderFloats; } }
         public bool UseVolume { get { return useVolume; } }
+
         internal void ApplyGUIUpdate(CloudGUI cloudGUI)
         {
             mainTexture.Clone(cloudGUI.MainTexture);
@@ -171,9 +172,10 @@ namespace Clouds
             {
                 shaderFloats = GetDefault(false);
             }
-            Texture2D tex1 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Clouds/Textures/particle/1", false);
-            Texture2D tex2 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Clouds/Textures/particle/2", false);
-            Texture2D tex3 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Clouds/Textures/particle/3", false);
+            Log("Before GetTextures.");
+            Texture2D tex1 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Textures/Clouds/particle/1", false);
+            Texture2D tex2 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Textures/Clouds/particle/2", false);
+            Texture2D tex3 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Textures/Clouds/particle/3", false);
             tex1.wrapMode = TextureWrapMode.Clamp;
             tex2.wrapMode = TextureWrapMode.Clamp;
             tex3.wrapMode = TextureWrapMode.Clamp;
