@@ -94,6 +94,7 @@ namespace Clouds
             List<Vector3> positions = hexGeometry.GetPoints();
             foreach (Vector3 position in positions)
             {
+                Debug.Log("Adding Particles");
                 Particles.Add(new CloudParticle(cloudParticleMaterial, segment.transform, position, magnitude));
             }
         }
@@ -106,6 +107,7 @@ namespace Clouds
             List<Vector3> positions = hexGeometry.GetPoints();
             foreach (Vector3 position in positions)
             {
+                Debug.Log("Adding Particles...");
                 Particles.Add(new CloudParticle(cloudParticleMaterial, segment.transform, position, magnitude));
             }
         }
