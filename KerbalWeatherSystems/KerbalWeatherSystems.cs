@@ -181,7 +181,7 @@ namespace Kerbal_Weather_Systems
 
                     case 1:
                         windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
-                        windDirection = -North * windSpeed;
+                        windDirection = North * windSpeed;
 
                         break;
                     case 2:
@@ -191,7 +191,7 @@ namespace Kerbal_Weather_Systems
                         break;
                     case 3:
                         windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
-                        windDirection = North * windSpeed;
+                        windDirection = -North * windSpeed;
 
                         break;
                     case 4:
@@ -201,22 +201,22 @@ namespace Kerbal_Weather_Systems
                         break;
                     case 5:
                         windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
-                        windDirection = (-North + -East).normalized * windSpeed;
+                        windDirection = (North + -East).normalized * windSpeed;
 
                         break;
                     case 6:
                         windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
-                        windDirection = (North + -East).normalized * windSpeed;
+                        windDirection = (-North + -East).normalized * windSpeed;
 
                         break;
                     case 7:
                         windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
-                        windDirection = (North + East).normalized * windSpeed;
+                        windDirection = (-North + East).normalized * windSpeed;
 
                         break;
                     case 8:
                         windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
-                        windDirection = (-North + East).normalized * windSpeed;
+                        windDirection = (North + East).normalized * windSpeed;
 
                         break;
                     default:
@@ -236,7 +236,7 @@ namespace Kerbal_Weather_Systems
             Up.Normalize(); //normalize that shit
             Vector3 East = Vector3.Cross(vessel.mainBody.angularVelocity, Up); //Get the reverse East axis
             East.Normalize(); //Normalize that shit
-            Vector3 North = Vector3.Cross(vessel.upAxis, East); //Get the reverse north axis
+            Vector3 North = Vector3.Cross(East, vessel.upAxis); //Get the reverse north axis
             North.Normalize();//Guess what? Normalize that shit
 
             try
@@ -422,7 +422,7 @@ namespace Kerbal_Weather_Systems
 
                 GUILayout.BeginVertical();
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Set")) { windSpeed = float.Parse(windSpeedString); }
+                if (GUILayout.Button("Set")) { windSpeed = float.Parse(windSpeedString);}
                 //if (GUILayout.Button("Settings")) { if (showWindSpeedSettings) { showWindSpeedSettings = false; } else { showWindSpeedSettings = true; } }
                 GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
