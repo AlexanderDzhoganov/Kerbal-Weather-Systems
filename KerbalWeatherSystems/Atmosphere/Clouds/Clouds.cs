@@ -200,7 +200,9 @@ namespace Clouds
                     Vector3 COM = FlightGlobals.ActiveVessel.findWorldCenterOfMass();
                     foreach (CloudLayer layer in CloudLayer.BodyDatabase[FlightGlobals.currentMainBody.name])
                     {
+                        
                         layer.UpdateParticleClouds(COM);
+                        
                     }
                     //test.PerformUpdate(COM);
                 }
@@ -211,7 +213,9 @@ namespace Clouds
                 {
                     foreach (CloudLayer cl in CloudLayer.BodyDatabase[FlightGlobals.currentMainBody.name])
                     {
+                        
                         cl.UpdateParticleClouds(GameObject.Find("KSC").transform.position);
+                        
                     }
                 }
             }

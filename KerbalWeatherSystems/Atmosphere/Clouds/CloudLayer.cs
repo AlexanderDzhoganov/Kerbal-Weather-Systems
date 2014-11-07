@@ -28,9 +28,6 @@ namespace Clouds
                     OverlayManager.Log("Initializing Textures");
                     Assembly assembly = Assembly.GetExecutingAssembly();
                     Debug.Log(assembly.GetManifestResourceNames());
-
-                    string[] embeddedResources = Assembly.GetAssembly(typeof(File)).GetManifestResourceNames();
-
                     StreamReader shaderStreamReader = new StreamReader(assembly.GetManifestResourceStream("KerbalWeatherSystems.Atmosphere.Clouds.Shaders.Compiled-SphereCloud.shader"));
                     OverlayManager.Log("reading stream...");
                     String shaderTxt = shaderStreamReader.ReadToEnd();
