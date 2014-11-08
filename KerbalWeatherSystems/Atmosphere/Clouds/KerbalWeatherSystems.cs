@@ -17,18 +17,19 @@ using ferram4;
 using Random = UnityEngine.Random;
 
 
-namespace Kerbal_Weather_Systems
+namespace KerbalWeatherSystems
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class KerbalWeatherSystems : MonoBehaviour
     {
         //Private variables
         private static Rect MainGUI = new Rect(100, 50, 100, 75);
-        private static Rect WindGUI = new Rect(250, 100, 250, 300);
+        private static Rect WindGUI = new Rect(250, 100, 250, 325);
         private static Rect RainGUI = new Rect(250,100,200,75);
         private static Rect CloudGUI = new Rect(250, 100, 200, 75);
         private static Rect SnowGUI = new Rect(250, 100, 200, 75);
         private static Rect StormGUI = new Rect(250, 100, 200, 75);
+        private static Rect WindStormGUI = new Rect(250, 100, 275, 300);
         private Rect WindSettingsGUI = new Rect(WindGUI.xMax, WindGUI.yMin + 50, 100, 125);
 
         //Public variables
@@ -46,6 +47,7 @@ namespace Kerbal_Weather_Systems
         public bool showSnowControls = false;
         public bool showCloudControls = false;
         public bool showStormControls = false;
+        public bool showWindStormControls = false;
         //private static Type serverType = null; //The server stuff for the assembly version.
         //private static bool? installed = null; //Checks if FARWind is installed
         public bool showWindLines = false;
@@ -60,6 +62,7 @@ namespace Kerbal_Weather_Systems
         int cloudsGUIID;
         int stormGUIID;
         int windSettingsGUIID;
+        int windStormGUIID;
 
         //Singles
 
@@ -68,9 +71,12 @@ namespace Kerbal_Weather_Systems
         public double HighestPressure;
         public double GForce;
         public double vesselHeight = 0;
+        public double WindGustTime = 5.0;
 
         //Floating point numbers
         public float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
+        public float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity;
+        public float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
         //private float Anger = 9001.0f; //You've found my easter egg!
 
         //Arrays
@@ -82,6 +88,8 @@ namespace Kerbal_Weather_Systems
         //Strings
         public String windDirectionLabel;
         public String windSpeedString = "1";
+        public String WSMGSString = "1.0"; //String for Wind Storm Max Gust Speed String
+        public String WindGustTimeString = "1.0"; //String for time it takes to reach max Gust
 
         //Test Variables
         private LineRenderer line = null;
@@ -117,7 +125,9 @@ namespace Kerbal_Weather_Systems
             stormGUIID = Guid.NewGuid().GetHashCode();
             snowGUIID = Guid.NewGuid().GetHashCode();
             windSettingsGUIID = Guid.NewGuid().GetHashCode();
-           
+            windStormGUIID = Guid.NewGuid().GetHashCode();
+
+            //float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //Casts the double received into a float
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
             windDirectionNumb = Random.Range(1, 9); //Set wind direction
@@ -157,14 +167,19 @@ namespace Kerbal_Weather_Systems
         void FixedUpdate()
         {
 
+            
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
 
             Part part = FlightGlobals.ActiveVessel.rootPart;
+            float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //Casts the double received into a float
+            //Debug.Log(AtmoDensity.ToString());
 
             if (windSpeed != 0.0f)
             {
                 Vessel vessel = FlightGlobals.ActiveVessel;
+
+                
 
                 Vector3 Up = vessel.upAxis; //get the up relative to the surface
                 Up.Normalize(); //normalize that shit
@@ -180,42 +195,42 @@ namespace Kerbal_Weather_Systems
 
                     case 1:
                         windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
-                        windDirection = North * windSpeed;
+                        windDirection = North * (windSpeed * AtmoDensity);
 
                         break;
                     case 2:
                         windDirectionLabel = "Easterly"; //Heading West: Wind going from East to West
-                        windDirection = -East * windSpeed;
+                        windDirection = -East * (windSpeed * AtmoDensity);
 
                         break;
                     case 3:
                         windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
-                        windDirection = -North * windSpeed;
+                        windDirection = -North * (windSpeed * AtmoDensity);
 
                         break;
                     case 4:
                         windDirectionLabel = "Westerly"; //Heading East: Wind going from West to East
-                        windDirection = East * windSpeed;
+                        windDirection = East * (windSpeed * AtmoDensity);
 
                         break;
                     case 5:
                         windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
-                        windDirection = (North + -East).normalized * windSpeed;
+                        windDirection = (North + -East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     case 6:
                         windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
-                        windDirection = (-North + -East).normalized * windSpeed;
+                        windDirection = (-North + -East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     case 7:
                         windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
-                        windDirection = (-North + East).normalized * windSpeed;
+                        windDirection = (-North + East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     case 8:
                         windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
-                        windDirection = (North + East).normalized * windSpeed;
+                        windDirection = (North + East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     default:
@@ -316,6 +331,12 @@ namespace Kerbal_Weather_Systems
 
             }
 
+            if(showWindStormControls)
+            {
+                WindStormGUI = GUI.Window(windStormGUIID, WindStormGUI, WindStormControls, "WindStorms~");
+            }
+
+
         }
 
         // Called when the GUI window things happen
@@ -412,16 +433,31 @@ namespace Kerbal_Weather_Systems
             if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
             {
 
-                if (windSpeedString == "") { windSpeedString = "0.00"; }
+                float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //Casts the double received into a float
+                if (windSpeedString == "" || windSpeedString == "0" || windSpeedString == "0.0") { windSpeedString = "0.00"; }
+                float windSpeedCheck;
 
                 //Setting wind speed block
                 GUILayout.BeginVertical();
+                GUILayout.Height(350);
                 GUILayout.Label("Wind Speed:"); windSpeedString = GUILayout.TextField(windSpeedString,15); //Does the textfield for setting the wind.
                 GUILayout.EndVertical();
 
                 GUILayout.BeginVertical();
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Set")) { windSpeed = float.Parse(windSpeedString);}
+                if (GUILayout.Button("Set")) 
+                { 
+                    windSpeedCheck = float.Parse(windSpeedString);
+                    if(windSpeedCheck > 1000.0f)
+                    {
+                        windSpeed = 0.00f;
+                    }
+                    else
+                    {
+                        windSpeed = windSpeedCheck;
+                    }
+                }
+                
                 //if (GUILayout.Button("Settings")) { if (showWindSpeedSettings) { showWindSpeedSettings = false; } else { showWindSpeedSettings = true; } }
                 GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
@@ -431,6 +467,7 @@ namespace Kerbal_Weather_Systems
                 //GUILayout.BeginHorizontal();
                 GUILayout.Label("Windspeed: " + (windSpeed.ToString("0.00")) + " m/s");
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
+                GUILayout.Label("Current AtmoDensity: " + AtmoDensity.ToString());
                 GUILayout.Label("Current Atmos. Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmos. Pressure: " + HighestPressure.ToString("0.000"));
                 GUILayout.Label("InAtmo? : True");
@@ -495,18 +532,16 @@ namespace Kerbal_Weather_Systems
 
             else //if we are not in an atmosphere, show the non atmo GUI
             {
-                GUILayout.BeginHorizontal(GUILayout.Width(600));
+                GUILayout.ExpandWidth(true);
+                GUILayout.BeginVertical(GUILayout.Height(500));
                 GUILayout.Label("Windspeed: " + "0" + WindSpeedSettingsString);
                 GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
+                GUILayout.Label("Current Atmo Density: 0.000");
                 GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
                 GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
                 GUILayout.Label("InAtmo? : False");
-                GUILayout.EndHorizontal();
-                GUILayout.BeginVertical(GUILayout.Height(100));
-                GUILayout.BeginHorizontal(GUILayout.Width(600));
                 GUILayout.Label("Wind Direction: N/a");
                 GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
                 GUI.DragWindow();
             }
 
@@ -594,14 +629,45 @@ namespace Kerbal_Weather_Systems
 
         void StormControls(int windowId) //Storm Control Panel
         {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("'Oh the impending dog howls...'");
-            GUILayout.EndHorizontal();
+            GUILayout.BeginVertical();
+            showWindStormControls = GUILayout.Toggle(showWindStormControls, "Wind Storms~");
+            GUILayout.EndVertical();
 
             GUI.DragWindow();
 
         }
 
+        void WindStormControls(int windStormGUIID)
+        {
+            
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(200);
+            if (GUILayout.Button("X")) { showWindStormControls = false; }
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Max wind gust speed: " + MaxWindGustSpeed); WSMGSString = GUILayout.TextField(WSMGSString, 10); //Does the textfield for setting the maximum gust speed
+            if (GUILayout.Button("Set"))
+            {
+                MaxWindGustSpeed = float.Parse(WSMGSString);
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Time until max is reached: " + WindGustTime); WindGustTimeString = GUILayout.TextField(WindGustTimeString, 10); //Does the textfield for the time taken for gusts
+            if (GUILayout.Button("Set"))
+            {
+                WindGustTime = double.Parse(WindGustTimeString);
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+
+            //GUI.DragWindow();
+
+        }
         
        
     // Return the current instance of the server, if any.

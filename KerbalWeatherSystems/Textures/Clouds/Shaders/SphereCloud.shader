@@ -1,20 +1,17 @@
-Shader "Sphere/Cloud" {
+﻿Shader "Sphere/Cloud" {
 	Properties {
 		_Color ("Color Tint", Color) = (1,1,1,1)
 		_MainTex ("Main (RGB)", 2D) = "white" {}
-		_MainOffset ("Main Offset", Vector) = (0,0,0,0)
 		_DetailTex ("Detail (RGB)", 2D) = "white" {}
 		_FalloffPow ("Falloff Power", Range(0,3)) = 2
 		_FalloffScale ("Falloff Scale", Range(0,20)) = 3
 		_DetailScale ("Detail Scale", Range(0,1000)) = 100
-		_DetailOffset ("Detail Offset", Vector) = (0,0,0,0)
+		_DetailOffset ("Detail Offset", Color) = (0,0,0,0)
 		_DetailDist ("Detail Distance", Range(0,1)) = 0.00875
 		_MinLight ("Minimum Light", Range(0,1)) = .5
 		_FadeDist ("Fade Distance", Range(0,100)) = 10
 		_FadeScale ("Fade Scale", Range(0,1)) = .002
 		_RimDist ("Rim Distance", Range(0,1)) = 1
-		_RimDistSub ("Rim Distance Sub", Range(0,2)) = 1.01
-		_InvFade ("Soft Particles Factor", Range(0.01,3.0)) = .01
 	}
 
 Category {
@@ -45,7 +42,6 @@ SubShader {
 		#pragma fragmentoption ARB_precision_hint_fastest
 		#pragma multi_compile_fwdbase
 		#pragma multi_compile_fwdadd_fullshadows
-		#pragma multi_compile SOFT_DEPTH_OFF SOFT_DEPTH_ON
 		#define PI 3.1415926535897932384626
 		#define INV_PI (1.0/PI)
 		#define TWOPI (2.0*PI) 
@@ -54,7 +50,6 @@ SubShader {
 		sampler2D _MainTex;
 		sampler2D _DetailTex;
 		fixed4 _Color;
-		fixed4 _MainOffset;
 		fixed4 _DetailOffset;
 		float _FalloffPow;
 		float _FalloffScale;
@@ -64,12 +59,7 @@ SubShader {
 		float _FadeDist;
 		float _FadeScale;
 		float _RimDist;
-		float _RimDistSub;
-		uniform float4x4 _Rotation;
 		
-		float _InvFade;
-		sampler2D _CameraDepthTexture;
-			
 		struct appdata_t {
 				float4 vertex : POSITION;
 				fixed4 color : COLOR;
@@ -85,14 +75,12 @@ SubShader {
 			float3 objNormal : TEXCOORD4;
 			float3 viewDir : TEXCOORD5;
 			LIGHTING_COORDS(6,7)
-			float4 projPos : TEXCOORD8;
 		};	
 		
 
 		v2f vert (appdata_t v)
 		{
 			v2f o;
-			
 			o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
 			
 		   float3 vertexPos = mul(_Object2World, v.vertex).xyz;
@@ -101,22 +89,18 @@ SubShader {
 	   	   o.worldOrigin = origin;
 	   	   o.viewDist = distance(vertexPos,_WorldSpaceCameraPos);
 	   	   o.worldNormal = normalize(vertexPos-origin);
-	   	   float4 vertex = mul(_Rotation, v.vertex);
-	   	   o.objNormal = -normalize( vertex);
+	   	   o.objNormal = normalize( v.vertex);
 	   	   o.viewDir = normalize(WorldSpaceViewDir(v.vertex));
-	   	   #ifdef SOFT_DEPTH_ON
-	   	   o.projPos = ComputeScreenPos (o.pos);
-			COMPUTE_EYEDEPTH(o.projPos.z);
-			TRANSFER_VERTEX_TO_FRAGMENT(o);
-		   #endif
 	   	   return o;
 	 	}
 	 	
-		float4 Derivatives( float lat, float lon, float3 pos)  
+		float4 Derivatives( float3 pos )  
 		{  
+		    float lat = INV_2PI*atan2( pos.y, pos.x );  
+		    float lon = INV_PI*acos( pos.z );  
 		    float2 latLong = float2( lat, lon );  
-		    float latDdx = INV_2PI*length( ddx( pos.xz ) );  
-		    float latDdy = INV_2PI*length( ddy( pos.xz ) );  
+		    float latDdx = INV_2PI*length( ddx( pos.xy ) );  
+		    float latDdy = INV_2PI*length( ddy( pos.xy ) );  
 		    float longDdx = ddx( lon );  
 		    float longDdy = ddy( lon );  
 		 	
@@ -128,14 +112,13 @@ SubShader {
 			half4 color;
 			float3 objNrm = IN.objNormal;
 		 	float2 uv;
-		 	uv.x = .5 + (INV_2PI*atan2(objNrm.x, objNrm.z));
-		 	uv.y = INV_PI*acos(objNrm.y);
-		 	uv+=_MainOffset.xy;
-		 	float4 uvdd = Derivatives(uv.x-.5, uv.y, objNrm);
+		 	uv.x = .5 + (INV_2PI*atan2(objNrm.z, objNrm.x));
+		 	uv.y = INV_PI*acos(-objNrm.y);
+		 	float4 uvdd = Derivatives(objNrm);
 		    half4 main = tex2D(_MainTex, uv, uvdd.xy, uvdd.zw)*_Color;
-			half4 detailX = tex2D (_DetailTex, (objNrm.zy+ _DetailOffset.xy) *_DetailScale);
-			half4 detailY = tex2D (_DetailTex, (objNrm.zx + _DetailOffset.xy) *_DetailScale);
-			half4 detailZ = tex2D (_DetailTex, (objNrm.xy + _DetailOffset.xy) *_DetailScale);
+			half4 detailX = tex2D (_DetailTex, objNrm.zy*_DetailScale + _DetailOffset.xy);
+			half4 detailY = tex2D (_DetailTex, objNrm.zx*_DetailScale + _DetailOffset.xy);
+			half4 detailZ = tex2D (_DetailTex, objNrm.xy*_DetailScale + _DetailOffset.xy);
 			objNrm = abs(objNrm);
 			half4 detail = lerp(detailZ, detailX, objNrm.x);
 			detail = lerp(detail, detailY, objNrm.y);
@@ -145,7 +128,7 @@ SubShader {
 			float rim = saturate(dot(IN.viewDir, IN.worldNormal));
 			rim = saturate(pow(_FalloffScale*rim,_FalloffPow));
 			float dist = distance(IN.worldVert,_WorldSpaceCameraPos);
-			float distLerp = saturate(_RimDist*(distance(IN.worldOrigin,_WorldSpaceCameraPos)-_RimDistSub*distance(IN.worldVert,IN.worldOrigin)));
+			float distLerp = saturate(_RimDist*(distance(IN.worldOrigin,_WorldSpaceCameraPos)-1.01*distance(IN.worldVert,IN.worldOrigin)));
 			float distFade = saturate((_FadeScale*dist)-_FadeDist);
 	   	   	float distAlpha = lerp(distFade, rim, distLerp);
 
@@ -158,13 +141,7 @@ SubShader {
 	        half diff = (NdotL - 0.01) / 0.99;
 			half lightIntensity = saturate(_LightColor0.a * diff * 4);
 			color.rgb *= saturate(ambientLighting + ((_MinLight + _LightColor0.rgb) * lightIntensity));
-			#ifdef SOFT_DEPTH_ON
-			float depth = UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(IN.projPos)));
-			depth = LinearEyeDepth (depth);
-			float partZ = IN.projPos.z;
-			float fade = saturate (_InvFade * (depth-partZ));
-			color.a *= fade;
-			#endif
+
           	return color;
 		}
 		ENDCG

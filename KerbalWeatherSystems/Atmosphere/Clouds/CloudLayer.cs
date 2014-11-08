@@ -1,6 +1,5 @@
 ﻿//Code copied from Rbray's mod EVE, all proper credits go to him for such hard work.
 
-using Utils;
 using OverlaySystem;
 using System;
 using System.Collections.Generic;
@@ -172,7 +171,7 @@ namespace Clouds
             {
                 shaderFloats = GetDefault(false);
             }
-            Log("Before GetTextures.");
+            //Log("Before GetTextures."); Is called on MainMenu startup
             Texture2D tex1 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Textures/Clouds/particle/1", false);
             Texture2D tex2 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Textures/Clouds/particle/2", false);
             Texture2D tex3 = GameDatabase.Instance.GetTexture("KerbalWeatherSystems/Textures/Clouds/particle/3", false);

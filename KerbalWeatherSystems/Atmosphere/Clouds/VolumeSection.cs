@@ -16,6 +16,7 @@ namespace Clouds
         GameObject particle;
         public CloudParticle(Material cloudParticleMaterial, Transform parent, Vector3 pos, float magnitude)
         {
+            //Debug.Log("Cloud Particle Called!"); Called on Space Center
             particle = new GameObject();
             particle.transform.parent = parent;
             particle.transform.localPosition = pos;
@@ -37,12 +38,13 @@ namespace Clouds
             Quad.Create(particle, Random.Next(2500, 4500), Color.white, up);
             var mr = particle.AddComponent<MeshRenderer>();
             mr.sharedMaterial = cloudParticleMaterial;
-            mr.castShadows = false;
+            mr.castShadows = false; //used to be false
             mr.receiveShadows = false;
             mr.enabled = true;
         }
         public void Update(Texture2D tex)
         {
+            //Debug.Log("Updating Texture"); is being called
             Vector3 point = particle.transform.parent.parent.InverseTransformPoint(particle.transform.position).normalized;
             float u = (float)(.5 + (Mathf.Atan2(point.z, point.x) / (2f * Mathf.PI)));
             float v = Mathf.Acos(-point.y) / Mathf.PI;
@@ -59,6 +61,7 @@ namespace Clouds
         }
         internal void Update(Color color)
         {
+            Debug.Log("Updating Colour");
             MeshFilter filter = particle.GetComponent<MeshFilter>();
             Mesh mesh = filter.mesh;
             mesh.colors = new Color[4]
@@ -71,6 +74,7 @@ namespace Clouds
         }
         internal void Destroy()
         {
+            //Debug.Log("Particle Destroyed!"); Is being called
             GameObject.DestroyImmediate(particle);
         }
     }
@@ -94,7 +98,7 @@ namespace Clouds
             List<Vector3> positions = hexGeometry.GetPoints();
             foreach (Vector3 position in positions)
             {
-               
+                //Debug.Log("Adding Particles..."); adding particles, they are added before volume is initialized...?
                 Particles.Add(new CloudParticle(cloudParticleMaterial, segment.transform, position, magnitude));
             }
         }
@@ -107,19 +111,22 @@ namespace Clouds
             List<Vector3> positions = hexGeometry.GetPoints();
             foreach (Vector3 position in positions)
             {
-                
+                //Debug.Log("Adding Particles..."); adding particles, they are added before volume is initialized...?
                 Particles.Add(new CloudParticle(cloudParticleMaterial, segment.transform, position, magnitude));
             }
         }
         public void Reassign(Vector3 pos, Vector3 offset, float magnitude = -1, Transform parent = null)
         {
+            //Debug.Log("Reassign called"); Called on SpaceCenter
             if (parent != null)
             {
+                //Debug.Log("Parent != null"); Called on SpaceCenter
                 segment.transform.parent = parent;
             }
             this.offset = offset;
             if (magnitude > 0)
             {
+                //Debug.Log("magnitude > 0"); Called on SpaceCenter
                 this.magnitude = magnitude;
             }
             segment.transform.localPosition = pos;
@@ -136,6 +143,7 @@ namespace Clouds
             foreach (CloudParticle particle in Particles)
             {
                 particle.Update(texture);
+                //Debug.Log("Texture Updated!"); Particle textures are being updated
             }
         }
         public void UpdateColor(Color color)
@@ -143,12 +151,14 @@ namespace Clouds
             foreach (CloudParticle particle in Particles)
             {
                 particle.Update(color);
+                Debug.Log("Updated Color!");
             }
         }
         internal void Destroy()
         {
             foreach (CloudParticle particle in Particles)
             {
+                //Debug.Log("Particle Destroyed"); Called during Flight
                 particle.Destroy();
             }
             GameObject.DestroyImmediate(segment);

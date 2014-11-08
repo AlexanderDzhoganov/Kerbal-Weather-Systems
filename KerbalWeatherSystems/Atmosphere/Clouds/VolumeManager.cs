@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace Clouds
 {
+    
     class VolumeManager
     {
         private List<VolumeSection> VolumeList = new List<VolumeSection>();
@@ -17,7 +18,7 @@ namespace Clouds
         float halfRad;
         float outCheck;
         float opp;
-        bool forceUpdate;
+        bool forceUpdate = true;
         bool atmosphere = true;
         float Magnitude;
         VolumeSection[] moveSections;
@@ -76,9 +77,10 @@ namespace Clouds
             Vector3 place = pos;
             if (atmosphere)
             {
-                Debug.Log("");
+                //Debug.Log("In Atmosphere");
                 if (forceUpdate)
                 {
+                   // Debug.Log("ForceUpdate");
                     Recenter(pos, true);
                     Magnitude = pos.magnitude;
                     VolumeList[0].Reassign(Center.localPosition, new Vector3(-radius, 0, 0), Magnitude);
@@ -93,6 +95,7 @@ namespace Clouds
             }
             else
             {
+                //Debug.Log("Not atmosphere?"); is being called when at space center
                 place *= Magnitude;
             }
             int moveCount = 0;
@@ -103,20 +106,24 @@ namespace Clouds
                 float distance = Vector3.Distance(volumeSection.Center, place);
                 if (distance > outCheck || forceUpdate)
                 {
+                    //Debug.Log("Distance... ForceUpdate"); Is being called 3 times during Flight
                     moveSections[moveCount++] = volumeSection;
                 }
                 else
                 {
+                    //Debug.Log("!Distance...ForceUpdate"); Is being called on SpaceCenter repeatedly
                     unchangedSections[unchangedCount++] = volumeSection;
                 }
             }
             forceUpdate = false;
             if (moveCount > 0)
             {
+                //Debug.Log("MoveCount > 0"); is being called once on SpaceCenter
                 Vector3 tmp;
                 switch (moveCount)
                 {
                     case 1:
+                        //Debug.Log("Case 1"); //Called after Case 3 has been called, repeated call over time
                         Recenter(-moveSections[0].Offset);
                         tmp = unchangedSections[0].Offset;
                         unchangedSections[0].Offset = -unchangedSections[1].Offset;
@@ -128,6 +135,7 @@ namespace Clouds
                         }
                         break;
                     case 2:
+                        //Debug.Log("Case 2");
                         Recenter(2f * unchangedSections[0].Offset);
                         unchangedSections[0].Offset *= -1f;
                         tmp = moveSections[0].Offset;
@@ -140,12 +148,14 @@ namespace Clouds
                         }
                         break;
                     case 3:
+                        //Debug.Log("Case 3"); //Case 3 was called on SpaceCenter, and Flight
                         Recenter(place, true);
                         moveSections[0].Reassign(Center.localPosition, new Vector3(-radius, 0, 0), Magnitude);
                         moveSections[1].Reassign(Center.localPosition, new Vector3(halfRad, 0, opp), Magnitude);
                         moveSections[2].Reassign(Center.localPosition, new Vector3(halfRad, 0, -opp), Magnitude);
                         if (!atmosphere)
                         {
+                            //Debug.Log("Not Atmosphere"); called on  SpaceCenter
                             moveSections[0].Update();
                             moveSections[1].Update();
                             moveSections[2].Update();
@@ -156,14 +166,17 @@ namespace Clouds
         }
         private void Recenter(Vector3 vector, bool abs = false)
         {
+            //Debug.Log("Recenter is called"); Called twice at SpaceCenter
             if (abs)
             {
+                //Debug.Log("Absolute"); //Called on SpaceCenter, after Case 3 has been called
                 Center.localPosition = vector;
                 Vector3 worldUp = Center.position - Center.parent.position;
                 Center.up = worldUp.normalized;
             }
             else
             {
+                //Debug.Log("Not Absolute"); //Called on SpaceCenter, after Case 1 has been called
                 Vector3 worldUp = Center.position - Center.parent.position;
                 Center.up = worldUp.normalized;
                 Center.Translate(vector);

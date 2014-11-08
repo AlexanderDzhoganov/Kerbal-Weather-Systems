@@ -7,6 +7,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 using System.IO;
+using Utils;
 using OverlaySystem;
 
 
@@ -31,6 +32,7 @@ namespace Clouds
         {
             foreach (CloudLayer cl in CloudLayer.Layers)
             {
+                Debug.Log("Removing cl");
                 cl.Remove(false);
             }
             CloudLayer.Layers.Clear();
@@ -48,6 +50,7 @@ namespace Clouds
         }
         private void LoadConfigNode(ConfigNode node, string url, bool useVolume, bool defaults)
         {
+            //Debug.Log("LoadConfigNode Called"); Called on MainMenu
             ConfigNode loadNode = node.GetNode("SAVED");
             if ((loadNode == null || defaults) && node.HasNode("DEFAULTS"))
             {
@@ -110,6 +113,7 @@ namespace Clouds
         }
         private void saveCloudLayers()
         {
+            //Debug.Log("Save Cloud Layers Called"); Called on GUI Saving
             foreach (KeyValuePair<String, List<CloudLayer>> cloudList in CloudLayer.BodyDatabase.ToArray())
             {
                 String body = cloudList.Key;
@@ -185,6 +189,7 @@ namespace Clouds
             {
                 foreach (CloudLayer layer in CloudLayer.Layers)
                 {
+                    //Debug.Log("Performing Update"); Called on MainMenu
                     layer.PerformUpdate();
                 }
                 bool alt = (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
@@ -200,7 +205,7 @@ namespace Clouds
                     Vector3 COM = FlightGlobals.ActiveVessel.findWorldCenterOfMass();
                     foreach (CloudLayer layer in CloudLayer.BodyDatabase[FlightGlobals.currentMainBody.name])
                     {
-                        
+                        //Debug.Log("Updating COM of Particle Clouds"); called repeatively through Flight
                         layer.UpdateParticleClouds(COM);
                         
                     }
@@ -213,7 +218,7 @@ namespace Clouds
                 {
                     foreach (CloudLayer cl in CloudLayer.BodyDatabase[FlightGlobals.currentMainBody.name])
                     {
-                        
+                        //Debug.Log("Updating Cloud Layer Clouds"); Called repeativly on Space Center
                         cl.UpdateParticleClouds(GameObject.Find("KSC").transform.position);
                         
                     }
@@ -231,11 +236,11 @@ namespace Clouds
             }
             }*/
         }
-        private GUISkin _mySkin;
+        //private GUISkin _mySkin;
         private Rect _mainWindowRect = new Rect(20, 20, 260, 600);
         private void OnGUI()
         {
-            GUI.skin = _mySkin;
+            //GUI.skin = _mySkin;
             CelestialBody current = null;
             if (MapView.MapIsEnabled)
             {
@@ -767,6 +772,7 @@ namespace Clouds
         public float RimDistance;
         public ShaderFloats()
         {
+            Debug.Log("Shader Floats() Called");
             this.FalloffPower = 0;
             this.FalloffScale = 0;
             this.DetailDistance = 0;
@@ -776,6 +782,7 @@ namespace Clouds
         }
         public ShaderFloats(float FalloffPower, float FalloffScale, float DetailDistance, float MinimumLight, float FadeDistance, float RimDistance)
         {
+            //Debug.Log("Shader Floats(Float) Called"); Called on Mainmenu
             this.FalloffPower = FalloffPower;
             this.FalloffScale = FalloffScale;
             this.DetailDistance = DetailDistance;
@@ -785,6 +792,7 @@ namespace Clouds
         }
         public ShaderFloats(ConfigNode configNode)
         {
+            Debug.Log("Shader Floats(CnfgNode) Called");
             this.FalloffPower = float.Parse(configNode.GetValue("falloffPower"));
             this.FalloffScale = float.Parse(configNode.GetValue("falloffScale"));
             this.DetailDistance = float.Parse(configNode.GetValue("detailDistance"));
@@ -794,6 +802,7 @@ namespace Clouds
         }
         public void Clone(ShaderFloatsGUI toClone)
         {
+            Debug.Log("Clone() Called");
             FalloffPower = toClone.FalloffPower;
             FalloffScale = toClone.FalloffScale;
             DetailDistance = toClone.DetailDistance;
@@ -803,6 +812,7 @@ namespace Clouds
         }
         internal ConfigNode GetNode(string name)
         {
+            Debug.Log("GetNode() Called");
             ConfigNode newNode = new ConfigNode(name);
             newNode.AddValue("falloffPower", this.FalloffPower);
             newNode.AddValue("falloffScale", this.FalloffScale);
@@ -859,6 +869,7 @@ namespace Clouds
         }
         public void Clone(ShaderFloats toClone)
         {
+            Debug.Log("Clone(ShaderFloats) Called");
             FalloffPower = toClone.FalloffPower;
             FalloffScale = toClone.FalloffScale;
             DetailDistance = toClone.DetailDistance;
