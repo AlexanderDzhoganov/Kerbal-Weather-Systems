@@ -13,7 +13,6 @@ using System.Reflection;
 using UnityEngine;
 using KSP.IO;
 using ferram4;
-using Atmosphere;
 
 using Random = UnityEngine.Random;
 

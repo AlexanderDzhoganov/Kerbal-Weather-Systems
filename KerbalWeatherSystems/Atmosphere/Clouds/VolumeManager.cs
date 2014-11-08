@@ -72,9 +72,11 @@ namespace Clouds
         }
         public void Update(Vector3 pos)
         {
+            //Debug.Log("Update is being called!");
             Vector3 place = pos;
             if (atmosphere)
             {
+                Debug.Log("");
                 if (forceUpdate)
                 {
                     Recenter(pos, true);

@@ -6,13 +6,12 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-
 namespace Utils
 {
     //Sphere code from http://wiki.unity3d.com/index.php/ProceduralPrimitives
-    public class IsoSphere
+    public static class IsoSphere
     {
-        protected struct TriangleIndices
+        private struct TriangleIndices
         {
             public int v1;
             public int v2;
@@ -25,7 +24,7 @@ namespace Utils
             }
         }
         // return index of point in the middle of p1 and p2
-        protected static int getMiddlePoint(int p1, int p2, ref List<Vector3> vertices, ref Dictionary<long, int> cache, float altitude)
+        private static int getMiddlePoint(int p1, int p2, ref List<Vector3> vertices, ref Dictionary<long, int> cache, float altitude)
         {
             // first check if we have it already
             bool firstIsSmaller = p1 < p2;
@@ -175,6 +174,8 @@ namespace Utils
                 verticies[i] = verticies[i].normalized * radius;
             }
             mesh.vertices = verticies;
+            mesh.RecalculateBounds();
+            mesh.Optimize();
         }
     }
 }
