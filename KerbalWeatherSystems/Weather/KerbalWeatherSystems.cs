@@ -13,11 +13,12 @@ using System.Reflection;
 using UnityEngine;
 using KSP.IO;
 using ferram4;
+using Weather;
 
 using Random = UnityEngine.Random;
 
 
-namespace KerbalWeatherSystems
+namespace Weather
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class KerbalWeatherSystems : MonoBehaviour
@@ -28,8 +29,8 @@ namespace KerbalWeatherSystems
         private static Rect RainGUI = new Rect(250,100,200,75);
         private static Rect CloudGUI = new Rect(250, 100, 200, 75);
         private static Rect SnowGUI = new Rect(250, 100, 200, 75);
-        private static Rect StormGUI = new Rect(250, 100, 200, 75);
-        private static Rect WindStormGUI = new Rect(250, 100, 275, 300);
+        private static Rect StormGUI = new Rect(250, 100, 175, 75);
+        private static Rect WindStormGUI = new Rect(250, 100, 325, 150);
         private Rect WindSettingsGUI = new Rect(WindGUI.xMax, WindGUI.yMin + 50, 100, 125);
 
         //Public variables
@@ -63,6 +64,7 @@ namespace KerbalWeatherSystems
         int stormGUIID;
         int windSettingsGUIID;
         int windStormGUIID;
+        public static int WindStormDirection;
 
         //Singles
 
@@ -71,13 +73,14 @@ namespace KerbalWeatherSystems
         public double HighestPressure;
         public double GForce;
         public double vesselHeight = 0;
-        public double WindGustTime = 5.0;
+
 
         //Floating point numbers
         public float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
         public float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity;
-        public float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
-        //private float Anger = 9001.0f; //You've found my easter egg!
+        public static float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
+        public static float WindGustTime = 5.0f;
+        //private float Anger = 1/3f; //You've found my easter egg!
 
         //Arrays
         
@@ -90,6 +93,7 @@ namespace KerbalWeatherSystems
         public String windSpeedString = "1";
         public String WSMGSString = "1.0"; //String for Wind Storm Max Gust Speed String
         public String WindGustTimeString = "1.0"; //String for time it takes to reach max Gust
+        public static String WindGustDirectionString = "1"; //String used for direction
 
         //Test Variables
         private LineRenderer line = null;
@@ -127,14 +131,19 @@ namespace KerbalWeatherSystems
             windSettingsGUIID = Guid.NewGuid().GetHashCode();
             windStormGUIID = Guid.NewGuid().GetHashCode();
 
-            //float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //Casts the double received into a float
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
             windDirectionNumb = Random.Range(1, 9); //Set wind direction
 
             Debug.Log("WIND: setting wind function"); //Write to debug
             FARWind.SetWindFunction(windStuff); //Set the WindFunction to the windStuff Function
+
+            //Empty strings
             windSpeedString = string.Empty;
+            WSMGSString = string.Empty;
+            WindGustTimeString = string.Empty;
+            WindGustDirectionString = string.Empty;
+
 
         }
 
@@ -239,6 +248,14 @@ namespace KerbalWeatherSystems
                         break;
 
                 }
+
+                //Killing the wind
+                if (WindGusts.KillingWind == true) { windSpeed = WindGusts.KillWind(windSpeed); }
+
+                //Starting the wind gusts
+                if(WindGusts.isWindStorm == true) {windSpeed = WindGusts.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
+
+
             }
         }
 
@@ -286,7 +303,7 @@ namespace KerbalWeatherSystems
         //Called when the drawing happens
         private void OnDraw()
         {
-
+            //Jokes on you, this ain't empty!
         }
 
         //Called when the GUI things happen
@@ -447,15 +464,21 @@ namespace KerbalWeatherSystems
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Set")) 
                 { 
-                    windSpeedCheck = float.Parse(windSpeedString);
-                    if(windSpeedCheck > 1000.0f)
+                    if(WindGusts.KillingWind == false || WindGusts.isWindStorm == false)
                     {
-                        windSpeed = 0.00f;
+                        if (windSpeedString == "" || windSpeedString == "0" || windSpeedString == "0.0") { windSpeedString = "0.00"; }
+                        windSpeedCheck = float.Parse(windSpeedString);
+
+                        if (windSpeedCheck > 1000.0f)
+                        {
+                            windSpeed = 0.00f;
+                        }
+                        else
+                        {
+                            windSpeed = windSpeedCheck;
+                        }
                     }
-                    else
-                    {
-                        windSpeed = windSpeedCheck;
-                    }
+                    
                 }
                 
                 //if (GUILayout.Button("Settings")) { if (showWindSpeedSettings) { showWindSpeedSettings = false; } else { showWindSpeedSettings = true; } }
@@ -487,11 +510,15 @@ namespace KerbalWeatherSystems
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Wind Direct.")) //Changes the wind direction
                 {
-                    windDirectionNumb += 1;
-                    if (windDirectionNumb == 9)
+                    if(WindGusts.isWindStorm == false)
                     {
-                        windDirectionNumb = 1;
+                        windDirectionNumb += 1;
+                        if (windDirectionNumb == 9)
+                        {
+                            windDirectionNumb = 1;
+                        }
                     }
+                   
                 }
 
                 if (isWindAutomatic == false)
@@ -633,21 +660,17 @@ namespace KerbalWeatherSystems
             showWindStormControls = GUILayout.Toggle(showWindStormControls, "Wind Storms~");
             GUILayout.EndVertical();
 
+
             GUI.DragWindow();
 
         }
 
-        void WindStormControls(int windStormGUIID)
+        void WindStormControls(int windowId)
         {
             
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(200);
-            if (GUILayout.Button("X")) { showWindStormControls = false; }
-            GUILayout.EndHorizontal();
-
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Max wind gust speed: " + MaxWindGustSpeed); WSMGSString = GUILayout.TextField(WSMGSString, 10); //Does the textfield for setting the maximum gust speed
+            GUILayout.Label("Max wind gust speed: " + MaxWindGustSpeed + " m/s"); WSMGSString = GUILayout.TextField(WSMGSString, 8); //Does the textfield for setting the maximum gust speed
             if (GUILayout.Button("Set"))
             {
                 MaxWindGustSpeed = float.Parse(WSMGSString);
@@ -655,17 +678,47 @@ namespace KerbalWeatherSystems
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
 
+            
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Time until max is reached: " + WindGustTime); WindGustTimeString = GUILayout.TextField(WindGustTimeString, 10); //Does the textfield for the time taken for gusts
+            GUILayout.Label("Time until max is reached: " + WindGustTime + " s"); 
+            WindGustTimeString = GUILayout.TextField(WindGustTimeString, 5); //Does the textfield for the time taken for gusts
             if (GUILayout.Button("Set"))
             {
-                WindGustTime = double.Parse(WindGustTimeString);
+                WindGustTime = float.Parse(WindGustTimeString);
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
 
-            //GUI.DragWindow();
+
+            GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Direction of Gust: (int)"); WindGustDirectionString = GUILayout.TextField(WindGustDirectionString, 1); //get the direction for the gust
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+
+
+            GUILayout.BeginVertical();
+            if (WindGusts.isWindStorm != true || WindGusts.KillingWind != true)
+            {
+                if (GUILayout.Button("Activate Wind Storm"))
+                {
+
+                    windDirectionNumb = int.Parse(WindGustDirectionString);
+                    windSpeed = WindGusts.KillWind(windSpeed);
+                    WindGusts.stormEnded = false;
+
+                }
+            }
+            else
+            {
+                GUILayout.Button("Wind Storm Active");
+            }
+            
+            GUILayout.EndVertical();
+
+
+            GUI.DragWindow();
 
         }
         
