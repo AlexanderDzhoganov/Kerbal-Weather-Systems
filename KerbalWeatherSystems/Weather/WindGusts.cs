@@ -12,6 +12,7 @@ namespace Weather
         public static bool KillingWind = false;
         public static bool isWindStorm = false;
         public static bool stormEnded = false;
+        public static float WindGustTime1;
 
         void Update()
         {
@@ -26,7 +27,7 @@ namespace Weather
         public static float KillWind(float windSpeed)
         {
            
-            Debug.Log("Killing Wind");
+            //Debug.Log("Killing Wind");
 
             KillingWind = true;
 
@@ -35,10 +36,10 @@ namespace Weather
 
 
 
-            if (Mathf.Approximately(windSpeed, 0.0f) && KillingWind == true) 
+            if (Mathf.Approximately(windSpeed, 0.0f)) 
             { 
 
-                windSpeed = 0.00f;
+                windSpeed = 0.001f;
                 KillingWind = false;
                 if(stormEnded == false)
                 {
@@ -57,25 +58,31 @@ namespace Weather
 
         public static float WindGustStorm(float windSpeed, float MaxWindGustSpeed, float WindGustTime)
         {
-            WindGustTime = Time.time;
-       
-
 
             if(isWindStorm == true)
             {
-                Debug.Log("Wind Storming");
-                windSpeed = Mathf.MoveTowards(0, MaxWindGustSpeed, WindGustTime);
+                //Debug.Log("Wind Storming");
+                windSpeed = Mathf.MoveTowards(windSpeed, MaxWindGustSpeed, windSpeed * 0.01f);
 
-                if (windSpeed == MaxWindGustSpeed)
+                
+
+                if (Mathf.Approximately(windSpeed, MaxWindGustSpeed))
                 {
+                    //float WindGustTime1 = WindGustTime;
 
-                    Debug.Log("WindGust Strongest, dying now");
-                    windSpeed = Mathf.MoveTowards(windSpeed, 0.00f, 0.5f);
-                    KillWind(windSpeed);
-                    stormEnded = true;
-                    isWindStorm = false;
-
+                    WindGustTime1 -= 0.02f; //WindGustTime - float.Parse(Planetarium.fetch.fixedDeltaTime.ToString());
+                    //WindGustTime -= TimeWarp.fixedDeltaTime;
+                    //Debug.Log(WindGustTime1.ToString());
+                    if(WindGustTime1 <= 0)
+                    {
+                        Debug.Log("WindGust Strongest, dying now");
+                        isWindStorm = false;
+                        KillWind(windSpeed);
+                        stormEnded = true;
+                    }
+                    
                 }
+                return windSpeed;
 
             }
 

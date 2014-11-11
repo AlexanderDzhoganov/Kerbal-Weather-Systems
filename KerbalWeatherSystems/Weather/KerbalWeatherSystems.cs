@@ -4,6 +4,14 @@
 //Ferram for use of FARWIND code and API, as well as helping with coding.
 //And very much thanks for Chris_W for bugtesting intensively and helping out with the code bunches~
 //Very, very much thanks for use of code on Rbray's EVE mod, it really helps to get clouds going!
+//Note!: Windspeed is reflection of air pressure gradients, moves from high pressure to low pressure,
+//the greater the difference, the greater the winds!
+//The Coriolis effect also affects the wind, North hemisphere means wind is shifted to it's right
+//and south hemisphere means it is shifted to it's left.
+//Friction is the second factor.
+//Wind Speed Gradient = m/s/km where m/s is the velocity of wind per km of height.
+//Pressure gradient = dPressure / dheight
+//Trade winds/prevailing winds will be a good start for automatic winds.
 
 using System;
 using System.Collections.Generic;
@@ -253,7 +261,7 @@ namespace Weather
                 if (WindGusts.KillingWind == true) { windSpeed = WindGusts.KillWind(windSpeed); }
 
                 //Starting the wind gusts
-                if(WindGusts.isWindStorm == true) {windSpeed = WindGusts.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
+                if(WindGusts.isWindStorm == true && WindGusts.KillingWind == false) {windSpeed = WindGusts.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
 
 
             }
@@ -463,22 +471,18 @@ namespace Weather
                 GUILayout.BeginVertical();
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Set")) 
-                { 
-                    if(WindGusts.KillingWind == false || WindGusts.isWindStorm == false)
-                    {
-                        if (windSpeedString == "" || windSpeedString == "0" || windSpeedString == "0.0") { windSpeedString = "0.00"; }
-                        windSpeedCheck = float.Parse(windSpeedString);
+                {
+                    if (windSpeedString == "" || windSpeedString == "0" || windSpeedString == "0.0") { windSpeedString = "0.00"; }
+                    windSpeedCheck = float.Parse(windSpeedString);
 
-                        if (windSpeedCheck > 1000.0f)
-                        {
-                            windSpeed = 0.00f;
-                        }
-                        else
-                        {
-                            windSpeed = windSpeedCheck;
-                        }
+                    if (windSpeedCheck > 1000.0f)
+                    {
+                        windSpeed = 0.00f;
                     }
-                    
+                    else
+                    {
+                        windSpeed = windSpeedCheck;
+                    }
                 }
                 
                 //if (GUILayout.Button("Settings")) { if (showWindSpeedSettings) { showWindSpeedSettings = false; } else { showWindSpeedSettings = true; } }
@@ -678,11 +682,10 @@ namespace Weather
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
 
-            
+
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Time until max is reached: " + WindGustTime + " s"); 
-            WindGustTimeString = GUILayout.TextField(WindGustTimeString, 5); //Does the textfield for the time taken for gusts
+            GUILayout.Label("Gust Duration: " + WindGustTime + "(s)"); WindGustTimeString = GUILayout.TextField(WindGustTimeString,3);
             if (GUILayout.Button("Set"))
             {
                 WindGustTime = float.Parse(WindGustTimeString);
@@ -703,16 +706,20 @@ namespace Weather
             {
                 if (GUILayout.Button("Activate Wind Storm"))
                 {
-
+                    //WindGusts.WindGustStorm(windSpeed, MaxWindGustSpeed,WindGustTime);
                     windDirectionNumb = int.Parse(WindGustDirectionString);
-                    windSpeed = WindGusts.KillWind(windSpeed);
+                    WindGusts.WindGustTime1 = WindGustTime;
                     WindGusts.stormEnded = false;
+                    windSpeed = WindGusts.KillWind(windSpeed);
+                    
 
                 }
             }
             else
             {
-                GUILayout.Button("Wind Storm Active");
+                if (GUILayout.Button("Wind Storm Active"))
+                {
+                }
             }
             
             GUILayout.EndVertical();
