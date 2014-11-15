@@ -1,4 +1,6 @@
-﻿using System;
+﻿//Wind gusts will be "random"
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +9,7 @@ using UnityEngine;
 
 namespace Weather
 {
-    public class WindGusts
+    public class Wind
     {
         public static bool KillingWind = false;
         public static bool isWindStorm = false;
@@ -22,6 +24,11 @@ namespace Weather
         void FixedUpdate()
         {
             
+        }
+
+        public void WindGusts(float windSpeed)
+        {
+
         }
 
         public static float KillWind(float windSpeed)
@@ -62,7 +69,7 @@ namespace Weather
             if(isWindStorm == true)
             {
                 //Debug.Log("Wind Storming");
-                windSpeed = Mathf.MoveTowards(windSpeed, MaxWindGustSpeed, windSpeed * 0.01f);
+                windSpeed = Mathf.MoveTowards(windSpeed, MaxWindGustSpeed, windSpeed * 0.05f);
 
                 
 

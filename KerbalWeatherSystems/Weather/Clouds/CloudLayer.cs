@@ -26,7 +26,7 @@ namespace Clouds
                 {
                     OverlayManager.Log("Initializing Textures");
                     Assembly assembly = Assembly.GetExecutingAssembly();
-                    StreamReader shaderStreamReader = new StreamReader(assembly.GetManifestResourceStream("KerbalWeatherSystems.Atmosphere.Clouds.Shaders.Compiled-SphereCloud.shader"));
+                    StreamReader shaderStreamReader = new StreamReader(assembly.GetManifestResourceStream("KerbalWeatherSystems.Weather.Clouds.Shaders.Compiled-SphereCloud.shader"));
                     OverlayManager.Log("reading stream...");
                     String shaderTxt = shaderStreamReader.ReadToEnd();
                     GlobalCloudShader = new Material(shaderTxt).shader;
@@ -43,7 +43,7 @@ namespace Clouds
                 {
                     OverlayManager.Log("Initializing Textures...");
                     Assembly assembly = Assembly.GetExecutingAssembly();
-                    StreamReader shaderStreamReader = new StreamReader(assembly.GetManifestResourceStream("KerbalWeatherSystems.Atmosphere.Clouds.Shaders.Compiled-CloudParticle.shader"));
+                    StreamReader shaderStreamReader = new StreamReader(assembly.GetManifestResourceStream("KerbalWeatherSystems.Weather.Clouds.Shaders.Compiled-CloudParticle.shader"));
                     OverlayManager.Log("reading stream...");
                     String shaderTxt = shaderStreamReader.ReadToEnd();
                     GlobalCloudParticleShader = new Material(shaderTxt).shader;

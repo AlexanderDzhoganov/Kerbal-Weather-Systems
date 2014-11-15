@@ -18,7 +18,7 @@ namespace Clouds
     {
         static bool Loaded = false;
         static KeyCode GUI_KEYCODE = KeyCode.N;
-        static bool useEditor = false;
+        public static bool useEditor = false;
         static bool AdvancedGUI = false;
         static Vector2 ScrollPosLayerList = Vector2.zero;
         static int SelectedLayer = 0;

@@ -12,6 +12,8 @@
 //Wind Speed Gradient = m/s/km where m/s is the velocity of wind per km of height.
 //Pressure gradient = dPressure / dheight
 //Trade winds/prevailing winds will be a good start for automatic winds.
+// Vessel.Lattitude, Vessel.Longitude can be used for setting the trade winds, as their direction depends on
+//Lattitude. Within 30 degrees above and below is the Hadley cell, and at 30 degrees is the mid-lattitude cell.
 
 using System;
 using System.Collections.Generic;
@@ -22,6 +24,7 @@ using UnityEngine;
 using KSP.IO;
 using ferram4;
 using Weather;
+using Clouds;
 
 using Random = UnityEngine.Random;
 
@@ -33,13 +36,14 @@ namespace Weather
     {
         //Private variables
         private static Rect MainGUI = new Rect(100, 50, 100, 75);
-        private static Rect WindGUI = new Rect(250, 100, 250, 325);
+        private static Rect WindGUI = new Rect(250, 100, 250, 175);
         private static Rect RainGUI = new Rect(250,100,200,75);
         private static Rect CloudGUI = new Rect(250, 100, 200, 75);
         private static Rect SnowGUI = new Rect(250, 100, 200, 75);
         private static Rect StormGUI = new Rect(250, 100, 175, 75);
-        private static Rect WindStormGUI = new Rect(250, 100, 325, 150);
+        private static Rect WindStormGUI = new Rect(250, 100, 325, 125);
         private Rect WindSettingsGUI = new Rect(WindGUI.xMax, WindGUI.yMin + 50, 100, 125);
+        private static Rect WeatherDataGUI = new Rect(250, 100, 210, 250);
 
         //Public variables
 
@@ -61,6 +65,7 @@ namespace Weather
         //private static bool? installed = null; //Checks if FARWind is installed
         public bool showWindLines = false;
         public bool showWindSpeedSettings = false;
+        public bool showWeatherDataGUI = false;
 
         //Integers
         public int windDirectionNumb;
@@ -73,6 +78,7 @@ namespace Weather
         int windSettingsGUIID;
         int windStormGUIID;
         public static int WindStormDirection;
+        int weatherDataGUIID;
 
         //Singles
 
@@ -138,6 +144,7 @@ namespace Weather
             snowGUIID = Guid.NewGuid().GetHashCode();
             windSettingsGUIID = Guid.NewGuid().GetHashCode();
             windStormGUIID = Guid.NewGuid().GetHashCode();
+            weatherDataGUIID = Guid.NewGuid().GetHashCode();
 
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
@@ -146,7 +153,7 @@ namespace Weather
             Debug.Log("WIND: setting wind function"); //Write to debug
             FARWind.SetWindFunction(windStuff); //Set the WindFunction to the windStuff Function
 
-            //Empty strings
+            //Empty the strings so Unity won't throw a shit fit.
             windSpeedString = string.Empty;
             WSMGSString = string.Empty;
             WindGustTimeString = string.Empty;
@@ -258,10 +265,10 @@ namespace Weather
                 }
 
                 //Killing the wind
-                if (WindGusts.KillingWind == true) { windSpeed = WindGusts.KillWind(windSpeed); }
+                if (Wind.KillingWind == true) { windSpeed = Wind.KillWind(windSpeed); }
 
                 //Starting the wind gusts
-                if(WindGusts.isWindStorm == true && WindGusts.KillingWind == false) {windSpeed = WindGusts.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
+                if(Wind.isWindStorm == true && Wind.KillingWind == false) {windSpeed = Wind.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
 
 
             }
@@ -361,6 +368,11 @@ namespace Weather
                 WindStormGUI = GUI.Window(windStormGUIID, WindStormGUI, WindStormControls, "WindStorms~");
             }
 
+            if(showWeatherDataGUI)
+            {
+                WeatherDataGUI = GUI.Window(weatherDataGUIID, WeatherDataGUI, WeatherDataPanel, "Weather Data~");
+            }
+
 
         }
 
@@ -388,6 +400,7 @@ namespace Weather
                 showCloudControls = GUILayout.Toggle(showCloudControls, "Clouds"); //Do the Toggle bullshittery, then Call the Clouds Control Panel
                 showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); //Do the Toggle bullshittery, then Call the Snow Control Panel
                 showStormControls = GUILayout.Toggle(showStormControls, "Storms"); //Do the Toggle bullshittery, then Call the Storm Control Panel
+                showWeatherDataGUI = GUILayout.Toggle(showWeatherDataGUI, "Weather Data"); //Do the Toggle bullshittery, then Call the Weather Data Panel
                 GUI.DragWindow();
             }
 
@@ -492,20 +505,20 @@ namespace Weather
                 //Main info block
                 GUILayout.BeginVertical();
                 //GUILayout.BeginHorizontal();
-                GUILayout.Label("Windspeed: " + (windSpeed.ToString("0.00")) + " m/s");
-                GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                GUILayout.Label("Current AtmoDensity: " + AtmoDensity.ToString());
-                GUILayout.Label("Current Atmos. Pressure: " + Pressure.ToString("0.000"));
-                GUILayout.Label("Highest Atmos. Pressure: " + HighestPressure.ToString("0.000"));
-                GUILayout.Label("InAtmo? : True");
+                //GUILayout.Label("Windspeed: " + (windSpeed.ToString("0.00")) + " m/s");
+                //GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
+                //GUILayout.Label("Current AtmoDensity: " + AtmoDensity.ToString());
+                //GUILayout.Label("Current Atmos. Pressure: " + Pressure.ToString("0.0000"));
+                //GUILayout.Label("Highest Atmos. Pressure: " + HighestPressure.ToString("0.000"));
+                //GUILayout.Label("InAtmo? : True");
                 //GUILayout.EndHorizontal();
                 //GUILayout.EndVertical();
 
                 //Wind Direction Block
                 //GUILayout.BeginVertical();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Wind Direction: " + windDirectionLabel);
-                GUILayout.EndHorizontal();
+                //GUILayout.BeginHorizontal();
+                //GUILayout.Label("Wind Direction: " + windDirectionLabel);
+                //GUILayout.EndHorizontal();
                 //GUILayout.EndVertical();
 
                 //Zeroing wind speed block
@@ -514,7 +527,7 @@ namespace Weather
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Wind Direct.")) //Changes the wind direction
                 {
-                    if(WindGusts.isWindStorm == false)
+                    if(Wind.isWindStorm == false)
                     {
                         windDirectionNumb += 1;
                         if (windDirectionNumb == 9)
@@ -523,36 +536,6 @@ namespace Weather
                         }
                     }
                    
-                }
-
-                if (isWindAutomatic == false)
-                {
-                    if (GUILayout.Button("Automatic Wind")) //turns on/off automatic wind
-                    {
-                        if (isWindAutomatic == true)
-                        {
-                            isWindAutomatic = false;
-                        }
-                        else if (isWindAutomatic == false)
-                        {
-                            isWindAutomatic = true;
-                        }
-                    }
-                }
-
-                else
-                {
-                    if (GUILayout.Button("Manual Wind"))
-                    {
-                        if (isWindAutomatic == true)
-                        {
-                            isWindAutomatic = false;
-                        }
-                        else if (isWindAutomatic == false)
-                        {
-                            isWindAutomatic = true;
-                        }
-                    }
                 }
 
                 GUILayout.EndHorizontal();
@@ -564,14 +547,10 @@ namespace Weather
             else //if we are not in an atmosphere, show the non atmo GUI
             {
                 GUILayout.ExpandWidth(true);
-                GUILayout.BeginVertical(GUILayout.Height(500));
-                GUILayout.Label("Windspeed: " + "0" + WindSpeedSettingsString);
-                GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
-                GUILayout.Label("Current Atmo Density: 0.000");
-                GUILayout.Label("\rCurrent Atmoshperic Pressure: " + Pressure.ToString("0.000"));
-                GUILayout.Label("Highest Atmospheric Pressure: " + HighestPressure.ToString("0.000"));
-                GUILayout.Label("InAtmo? : False");
-                GUILayout.Label("Wind Direction: N/a");
+                GUILayout.BeginVertical(GUILayout.Height(50));
+                GUILayout.BeginHorizontal(GUILayout.Width(100));
+                GUILayout.Label("Out of Atmo, no wind data.");
+                GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
                 GUI.DragWindow();
             }
@@ -641,7 +620,7 @@ namespace Weather
         void CloudControls(int windowId) //Cloud Control Panel
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label("You gaze up at the sky. 'Is that one shaped like a dog to you?'");
+            GUILayout.Label("Press ALT + N");
             GUILayout.EndHorizontal();
 
             GUI.DragWindow();
@@ -702,15 +681,15 @@ namespace Weather
 
 
             GUILayout.BeginVertical();
-            if (WindGusts.isWindStorm != true || WindGusts.KillingWind != true)
+            if (Wind.isWindStorm != true || Wind.KillingWind != true)
             {
                 if (GUILayout.Button("Activate Wind Storm"))
                 {
                     //WindGusts.WindGustStorm(windSpeed, MaxWindGustSpeed,WindGustTime);
                     windDirectionNumb = int.Parse(WindGustDirectionString);
-                    WindGusts.WindGustTime1 = WindGustTime;
-                    WindGusts.stormEnded = false;
-                    windSpeed = WindGusts.KillWind(windSpeed);
+                    Wind.WindGustTime1 = WindGustTime;
+                    Wind.stormEnded = false;
+                    windSpeed = Wind.KillWind(windSpeed);
                     
 
                 }
@@ -727,6 +706,23 @@ namespace Weather
 
             GUI.DragWindow();
 
+        }
+
+        void WeatherDataPanel(int windowId)
+        {
+            GUILayout.BeginVertical();
+            GUILayout.Label("Weather Data:");
+            GUILayout.Label("Altitude: " + FlightGlobals.ActiveVessel.altitude.ToString("0.000"));
+            GUILayout.Label("Vessel Lat: " + FlightGlobals.ActiveVessel.latitude.ToString("0.0000"));
+            GUILayout.Label("Vessel Long: " + FlightGlobals.ActiveVessel.longitude.ToString("0.0000"));
+            GUILayout.Label("Atmo. Press: " + FlightGlobals.ActiveVessel.staticPressure.ToString("0.0000"));
+            GUILayout.Label("Atmo. Dens: " + FlightGlobals.ActiveVessel.atmDensity.ToString("0.0000"));
+            GUILayout.Label("Temp: " + FlightGlobals.ActiveVessel.flightIntegrator.getExternalTemperature().ToString("0.00"));
+            GUILayout.Label("Wind Direction: " + windDirectionLabel);
+            GUILayout.Label("Wind Speed: " + windSpeed + " m/s");
+            GUILayout.EndVertical();
+
+            GUI.DragWindow();
         }
         
        
