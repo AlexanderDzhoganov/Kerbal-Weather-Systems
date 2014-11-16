@@ -9,6 +9,7 @@ using UnityEngine;
 using System.IO;
 using Utils;
 using OverlaySystem;
+using Weather;
 
 
 namespace Clouds
@@ -17,7 +18,7 @@ namespace Clouds
     public class Clouds : MonoBehaviour
     {
         static bool Loaded = false;
-        static KeyCode GUI_KEYCODE = KeyCode.N;
+        //static KeyCode GUI_KEYCODE = KeyCode.N;
         public static bool useEditor = false;
         static bool AdvancedGUI = false;
         static Vector2 ScrollPosLayerList = Vector2.zero;
@@ -192,11 +193,12 @@ namespace Clouds
                     //Debug.Log("Performing Update"); Called on MainMenu
                     layer.PerformUpdate();
                 }
-                bool alt = (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
-                if (alt && Input.GetKeyDown(GUI_KEYCODE))
-                {
-                    useEditor = !useEditor;
-                }
+                //bool alt = (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
+                useEditor = HeadMaster.useEditor;
+                //if (alt && Input.GetKeyDown(GUI_KEYCODE))
+                //{
+                   // useEditor = !useEditor;
+               // }
             }
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
@@ -237,7 +239,7 @@ namespace Clouds
             }*/
         }
         //private GUISkin _mySkin;
-        private Rect _mainWindowRect = new Rect(20, 20, 260, 600);
+        private static Rect _mainWindowRect = new Rect(20, 20, 260, 600);
         private void OnGUI()
         {
             //GUI.skin = _mySkin;
@@ -388,17 +390,13 @@ namespace Clouds
                     }
                     int nextLine = 290;
                     nextLine = HandleAltitudeGUI(CloudGUI.Altitude, nextLine);
-                    CloudGUI.UseVolume = GUI.Toggle(
-                    new Rect(10, nextLine, 125, 25), CloudGUI.UseVolume, "Volumetric Clouds");
+                    CloudGUI.UseVolume = GUI.Toggle(new Rect(10, nextLine, 125, 25), CloudGUI.UseVolume, "Volumetric Clouds");
                     nextLine += 30;
                     nextLine = HandleColorGUI(CloudGUI.Color, nextLine);
-                    GUI.Label(
-                    new Rect(10, nextLine, 80, 25), "MainTex: ", gs);
+                    GUI.Label(new Rect(10, nextLine, 80, 25), "MainTex: ", gs);
                     nextLine = HandleTextureGUI(CloudGUI.MainTexture, nextLine);
-                    GUI.Label(
-                    new Rect(10, nextLine, 80, 25), "DetailTex: ", gs);
-                    CloudGUI.DetailTexture.InUse = GUI.Toggle(
-                    new Rect(10, nextLine, 25, 25), CloudGUI.DetailTexture.InUse, "");
+                    GUI.Label(new Rect(10, nextLine, 80, 25), "DetailTex: ", gs);
+                    CloudGUI.DetailTexture.InUse = GUI.Toggle(new Rect(10, nextLine, 25, 25), CloudGUI.DetailTexture.InUse, "");
                     if (CloudGUI.DetailTexture.InUse)
                     {
                         nextLine = HandleTextureGUI(CloudGUI.DetailTexture, nextLine);
@@ -547,8 +545,7 @@ namespace Clouds
             Color errorColor = new Color(1, 0, 0);
             Color normalColor = texFieldGS.normal.textColor;
             float dummyFloat;
-            GUI.Label(
-            new Rect(10, y, 65, 25), "Altitude: ", gs);
+            GUI.Label(new Rect(10, y, 65, 25), "Altitude: ", gs);
             if (float.TryParse(altitude.AltitudeS, out dummyFloat))
             {
                 texFieldGS.normal.textColor = normalColor;
@@ -654,7 +651,7 @@ namespace Clouds
             color.Update(SRed, FRed, SGreen, FGreen, SBlue, FBlue, SAlpha, FAlpha);
             return y += 30;
         }
-        private int HandleTextureGUI(TextureSetGUI textureSet, int y)
+        private static int HandleTextureGUI(TextureSetGUI textureSet, int y)
         {
             GUIStyle labelGS = new GUIStyle(GUI.skin.label);
             labelGS.alignment = TextAnchor.MiddleRight;
@@ -664,11 +661,9 @@ namespace Clouds
             float dummyFloat;
             float vectorWidth = (_mainWindowRect.width - 140) / 2;
             float vectorStart = 105 + (_mainWindowRect.width - 140) / 2;
-            textureSet.TextureFile = GUI.TextField(
-            new Rect(90, y, _mainWindowRect.width - 100, 25), textureSet.TextureFile);
+            textureSet.TextureFile = GUI.TextField(new Rect(90, y, _mainWindowRect.width - 100, 25), textureSet.TextureFile);
             y += 30;
-            GUI.Label(
-            new Rect(10, y, 90, 25), " Scale:", labelGS);
+            GUI.Label(new Rect(10, y, 90, 25), " Scale:", labelGS);
             if (float.TryParse(textureSet.Scale, out dummyFloat))
             {
                 texFieldGS.normal.textColor = normalColor;
@@ -683,11 +678,9 @@ namespace Clouds
                 texFieldGS.active.textColor = errorColor;
                 texFieldGS.focused.textColor = errorColor;
             }
-            textureSet.Scale = GUI.TextField(
-            new Rect(100, y, vectorWidth, 25), textureSet.Scale, texFieldGS);
+            textureSet.Scale = GUI.TextField(new Rect(100, y, vectorWidth, 25), textureSet.Scale, texFieldGS);
             y += 30;
-            GUI.Label(
-            new Rect(10, y, 90, 25), " Offset: X:", labelGS);
+            GUI.Label(new Rect(10, y, 90, 25), " Offset: X:", labelGS);
             if (float.TryParse(textureSet.StartOffsetX, out dummyFloat))
             {
                 texFieldGS.normal.textColor = normalColor;
@@ -702,10 +695,8 @@ namespace Clouds
                 texFieldGS.active.textColor = errorColor;
                 texFieldGS.focused.textColor = errorColor;
             }
-            textureSet.StartOffsetX = GUI.TextField(
-            new Rect(100, y, vectorWidth, 25), textureSet.StartOffsetX, texFieldGS);
-            GUI.Label(
-            new Rect(vectorStart, y, 25, 25), " Y:", labelGS);
+            textureSet.StartOffsetX = GUI.TextField(new Rect(100, y, vectorWidth, 25), textureSet.StartOffsetX, texFieldGS);
+            GUI.Label(new Rect(vectorStart, y, 25, 25), " Y:", labelGS);
             if (float.TryParse(textureSet.StartOffsetY, out dummyFloat))
             {
                 texFieldGS.normal.textColor = normalColor;
@@ -720,12 +711,11 @@ namespace Clouds
                 texFieldGS.active.textColor = errorColor;
                 texFieldGS.focused.textColor = errorColor;
             }
-            textureSet.StartOffsetY = GUI.TextField(
-            new Rect(vectorStart + 25, y, vectorWidth, 25), textureSet.StartOffsetY, texFieldGS);
+            textureSet.StartOffsetY = GUI.TextField(new Rect(vectorStart + 25, y, vectorWidth, 25), textureSet.StartOffsetY, texFieldGS);
             y += 30;
-            GUI.Label(
-            new Rect(10, y, 90, 25), " Speed: X:", labelGS);
-            if (float.TryParse(textureSet.SpeedX, out dummyFloat))
+
+            GUI.Label(new Rect(10, y, 90, 25), " Speed: X:", labelGS);
+            if (float.TryParse(Wind.windDirection.x.ToString(), out dummyFloat))//(textureSet.SpeedX, out dummyFloat))
             {
                 texFieldGS.normal.textColor = normalColor;
                 texFieldGS.hover.textColor = normalColor;
@@ -739,11 +729,10 @@ namespace Clouds
                 texFieldGS.active.textColor = errorColor;
                 texFieldGS.focused.textColor = errorColor;
             }
-            textureSet.SpeedX = GUI.TextField(
-            new Rect(100, y, vectorWidth, 25), textureSet.SpeedX, texFieldGS);
-            GUI.Label(
-            new Rect(vectorStart, y, 25, 25), " Y:", labelGS);
-            if (float.TryParse(textureSet.SpeedY, out dummyFloat))
+            textureSet.SpeedX = GUI.TextField( new Rect(100, y, vectorWidth, 25), textureSet.SpeedX, texFieldGS);
+
+            GUI.Label(new Rect(vectorStart, y, 25, 25), " Y:", labelGS);
+            if (float.TryParse(Wind.windDirection.y.ToString(), out dummyFloat)) //(textureSet.SpeedY, out dummyFloat))
             {
                 texFieldGS.normal.textColor = normalColor;
                 texFieldGS.hover.textColor = normalColor;
@@ -757,8 +746,7 @@ namespace Clouds
                 texFieldGS.active.textColor = errorColor;
                 texFieldGS.focused.textColor = errorColor;
             }
-            textureSet.SpeedY = GUI.TextField(
-            new Rect(vectorStart + 25, y, vectorWidth, 25), textureSet.SpeedY, texFieldGS);
+            textureSet.SpeedY = GUI.TextField(new Rect(vectorStart + 25, y, vectorWidth, 25), textureSet.SpeedY, texFieldGS);
             return y + 30;
         }
     }

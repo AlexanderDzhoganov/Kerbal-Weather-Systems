@@ -32,11 +32,11 @@ using Random = UnityEngine.Random;
 namespace Weather
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
-    public class KerbalWeatherSystems : MonoBehaviour
+    public class HeadMaster : MonoBehaviour
     {
         //Private variables
         private static Rect MainGUI = new Rect(100, 50, 100, 75);
-        private static Rect WindGUI = new Rect(250, 100, 250, 175);
+        private static Rect WindGUI = new Rect(250, 100, 250, 100);
         private static Rect RainGUI = new Rect(250,100,200,75);
         private static Rect CloudGUI = new Rect(250, 100, 200, 75);
         private static Rect SnowGUI = new Rect(250, 100, 200, 75);
@@ -52,6 +52,7 @@ namespace Weather
         public bool isRaining = false; //Is it Raining?
         public bool isSnowing = false; //Is it Snowing?
         public bool isStorming = false; //Is it storming?
+        public static bool useEditor = false;
 
         //GUI Bool
         public bool isWindowOpen = true; //Value for GUI window open
@@ -87,20 +88,26 @@ namespace Weather
         public double HighestPressure;
         public double GForce;
         public double vesselHeight = 0;
+        public static double Longitude;
+        public static double Latitude;
+        public static double Altitude;
 
 
         //Floating point numbers
-        public float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
-        public float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity;
+        public static float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
+        public float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //DO NOT make this static, it will kill things.
         public static float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
         public static float WindGustTime = 5.0f;
+        public static float Temperature;
+        public static float TextureSpeedX;
+        public static float TextureSpeedY;
         //private float Anger = 1/3f; //You've found my easter egg!
 
         //Arrays
         
 
         //Vectors
-        public Vector3 windDirection;
+        public static Vector3 windDirection;
 
         //Strings
         public String windDirectionLabel;
@@ -148,7 +155,9 @@ namespace Weather
 
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
-            windDirectionNumb = Random.Range(1, 9); //Set wind direction
+            //windDirectionNumb = Random.Range(1, 9); //Set wind direction
+            windDirectionLabel = Wind.WindDirectionLabel;
+            windDirectionNumb = Wind.windDirectionNumb;
 
             Debug.Log("WIND: setting wind function"); //Write to debug
             FARWind.SetWindFunction(windStuff); //Set the WindFunction to the windStuff Function
@@ -195,15 +204,25 @@ namespace Weather
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
 
-            Part part = FlightGlobals.ActiveVessel.rootPart;
+            Vessel vessel = FlightGlobals.ActiveVessel;
+            Part part = vessel.rootPart;
             float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //Casts the double received into a float
+
+            //Data Collection:
+            Latitude = vessel.latitude;
+            Longitude = vessel.longitude;
+            Altitude = vessel.altitude;
+            Temperature = vessel.flightIntegrator.getExternalTemperature();
             //Debug.Log(AtmoDensity.ToString());
 
             if (windSpeed != 0.0f)
             {
-                Vessel vessel = FlightGlobals.ActiveVessel;
+                
 
                 
+                windDirectionLabel = Wind.WindDirectionLabel;
+                windDirectionNumb = Wind.windDirectionNumb;
+
 
                 Vector3 Up = vessel.upAxis; //get the up relative to the surface
                 Up.Normalize(); //normalize that shit
@@ -219,50 +238,52 @@ namespace Weather
 
                     case 1:
                         windDirectionLabel = "Northerly"; //Heading South: Wind going from North to South
-                        windDirection = North * (windSpeed * AtmoDensity);
+                        //windDirection = North * (windSpeed * AtmoDensity);
 
                         break;
                     case 2:
                         windDirectionLabel = "Easterly"; //Heading West: Wind going from East to West
-                        windDirection = -East * (windSpeed * AtmoDensity);
+                        //windDirection = -East * (windSpeed * AtmoDensity);
 
                         break;
                     case 3:
                         windDirectionLabel = "Southerly"; //Heading North: Wind going from South to North
-                        windDirection = -North * (windSpeed * AtmoDensity);
+                        //windDirection = -North * (windSpeed * AtmoDensity);
 
                         break;
                     case 4:
                         windDirectionLabel = "Westerly"; //Heading East: Wind going from West to East
-                        windDirection = East * (windSpeed * AtmoDensity);
+                        //windDirection = East * (windSpeed * AtmoDensity);
 
                         break;
                     case 5:
                         windDirectionLabel = "North Easterly"; //Heading South West: Wind going from North East to South West
-                        windDirection = (North + -East).normalized * (windSpeed * AtmoDensity);
+                        //windDirection = (North + -East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     case 6:
                         windDirectionLabel = "South Easterly"; //Heading North West: Wind going from South East to North West
-                        windDirection = (-North + -East).normalized * (windSpeed * AtmoDensity);
+                        //windDirection = (-North + -East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     case 7:
                         windDirectionLabel = "South Westerly"; //Heading North East: Wind going from South West to North East
-                        windDirection = (-North + East).normalized * (windSpeed * AtmoDensity);
+                        //windDirection = (-North + East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     case 8:
                         windDirectionLabel = "North Westerly"; //Heading South East: Wind going from North West to South East
-                        windDirection = (North + East).normalized * (windSpeed * AtmoDensity);
+                        //windDirection = (North + East).normalized * (windSpeed * AtmoDensity);
 
                         break;
                     default:
                         windDirectionLabel = "N/a";
-                        windDirection.Zero(); //Zeroes the wind direction vector?
+                        //windDirection.Zero(); //Zeroes the wind direction vector?
                         break;
 
                 }
+
+                Wind.FixedUpdate();
 
                 //Killing the wind
                 if (Wind.KillingWind == true) { windSpeed = Wind.KillWind(windSpeed); }
@@ -277,13 +298,9 @@ namespace Weather
         //Do ALL the wind things!
         public Vector3 windStuff(CelestialBody body, Part part, Vector3 position)
         {
-            Vessel vessel = FlightGlobals.ActiveVessel;
-            Vector3 Up = vessel.upAxis; //get the up relative to the surface
-            Up.Normalize(); //normalize that shit
-            Vector3 East = Vector3.Cross(vessel.mainBody.angularVelocity, Up); //Get the reverse East axis
-            East.Normalize(); //Normalize that shit
-            Vector3 North = Vector3.Cross(East, vessel.upAxis); //Get the reverse north axis
-            North.Normalize();//Guess what? Normalize that shit
+            
+            Wind.WindStuff();
+            windDirection = Wind.windDirection;
 
             try
             {
@@ -303,14 +320,14 @@ namespace Weather
 
         public void Save(ConfigNode node)
         {
-            PluginConfiguration config = PluginConfiguration.CreateForType<KerbalWeatherSystems>();
+            PluginConfiguration config = PluginConfiguration.CreateForType<HeadMaster>();
             config.SetValue("Window Position", MainGUI);
             config.save();
         }
 
         public void Load(ConfigNode node)
         {
-            PluginConfiguration config = PluginConfiguration.CreateForType<KerbalWeatherSystems>();
+            PluginConfiguration config = PluginConfiguration.CreateForType<HeadMaster>();
             config.load();
             MainGUI = config.GetValue<Rect>("Window Position");
         }
@@ -503,7 +520,7 @@ namespace Weather
                 GUILayout.EndVertical();
 
                 //Main info block
-                GUILayout.BeginVertical();
+                //GUILayout.BeginVertical();
                 //GUILayout.BeginHorizontal();
                 //GUILayout.Label("Windspeed: " + (windSpeed.ToString("0.00")) + " m/s");
                 //GUILayout.Label("Vessel Altitude: " + vesselHeight.ToString("0.00"));
@@ -523,7 +540,8 @@ namespace Weather
 
                 //Zeroing wind speed block
                 //GUILayout.BeginVertical();
-                if (GUILayout.Button("Wind Speed Zero")) { windSpeed = 0.0f; }
+                //if (GUILayout.Button("Wind Speed Zero")) { windSpeed = 0.0f; }
+                /*
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Wind Direct.")) //Changes the wind direction
                 {
@@ -539,7 +557,8 @@ namespace Weather
                 }
 
                 GUILayout.EndHorizontal();
-                GUILayout.EndVertical();
+                 */
+                //GUILayout.EndVertical();
 
                 GUI.DragWindow();
             }
@@ -619,10 +638,10 @@ namespace Weather
 
         void CloudControls(int windowId) //Cloud Control Panel
         {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Press ALT + N");
-            GUILayout.EndHorizontal();
-
+            GUILayout.BeginVertical();
+            GUILayout.Toggle(useEditor, "Open Cloud GUI");
+            GUILayout.EndVertical();
+            
             GUI.DragWindow();
 
         }
@@ -712,7 +731,7 @@ namespace Weather
         {
             GUILayout.BeginVertical();
             GUILayout.Label("Weather Data:");
-            GUILayout.Label("Altitude: " + FlightGlobals.ActiveVessel.altitude.ToString("0.000"));
+            GUILayout.Label("Altitude: " + Altitude.ToString("0.000"));
             GUILayout.Label("Vessel Lat: " + FlightGlobals.ActiveVessel.latitude.ToString("0.0000"));
             GUILayout.Label("Vessel Long: " + FlightGlobals.ActiveVessel.longitude.ToString("0.0000"));
             GUILayout.Label("Atmo. Press: " + FlightGlobals.ActiveVessel.staticPressure.ToString("0.0000"));
