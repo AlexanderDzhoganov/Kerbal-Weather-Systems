@@ -158,6 +158,7 @@ namespace Weather
             //windDirectionNumb = Random.Range(1, 9); //Set wind direction
             windDirectionLabel = Wind.WindDirectionLabel;
             windDirectionNumb = Wind.windDirectionNumb;
+            windSpeed = 1.0f;
 
             Debug.Log("WIND: setting wind function"); //Write to debug
             FARWind.SetWindFunction(windStuff); //Set the WindFunction to the windStuff Function
@@ -300,11 +301,22 @@ namespace Weather
         {
             
             Wind.WindStuff();
-            windDirection = Wind.windDirection;
+            if(FlightGlobals.ActiveVessel.isEVA)
+            {
+                Vessel kerbal = FlightGlobals.ActiveVessel;
+
+                foreach (Part p in kerbal.parts)
+                {
+
+                    p.rigidbody.AddForce(windDirection.x / 1000, windDirection.y / 1000, windDirection.z / 1000);
+
+                }
+
+            }
 
             try
             {
-                return windDirection; //return the windDirection vector stuff
+                return windDirection = Wind.windDirection; //return the windDirection vector stuff
             }
 
             catch (Exception e)
@@ -313,7 +325,6 @@ namespace Weather
 
                 return Vector3.zero;
             }
-
 
 
         }

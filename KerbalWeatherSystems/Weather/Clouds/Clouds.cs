@@ -193,12 +193,12 @@ namespace Clouds
                     //Debug.Log("Performing Update"); Called on MainMenu
                     layer.PerformUpdate();
                 }
-                //bool alt = (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
+                bool alt = (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
                 useEditor = HeadMaster.useEditor;
-                //if (alt && Input.GetKeyDown(GUI_KEYCODE))
-                //{
-                   // useEditor = !useEditor;
-               // }
+                if (alt && Input.GetKeyDown(KeyCode.N))
+                {
+                   useEditor = !useEditor;
+                }
             }
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
@@ -715,7 +715,7 @@ namespace Clouds
             y += 30;
 
             GUI.Label(new Rect(10, y, 90, 25), " Speed: X:", labelGS);
-            if (float.TryParse(Wind.windDirection.x.ToString(), out dummyFloat))//(textureSet.SpeedX, out dummyFloat))
+            if (float.TryParse(textureSet.SpeedX, out dummyFloat))
             {
                 texFieldGS.normal.textColor = normalColor;
                 texFieldGS.hover.textColor = normalColor;

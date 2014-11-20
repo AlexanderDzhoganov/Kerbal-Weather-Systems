@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Weather;
+using Database;
 
 namespace OverlaySystem
 {
@@ -130,8 +132,8 @@ namespace OverlaySystem
             this.StartOffsetX = textureSet.StartOffset.x.ToString("R");
             this.StartOffsetY = textureSet.StartOffset.y.ToString("R");
             this.Scale = textureSet.Scale.ToString("R");
-            this.SpeedX = textureSet.Speed.x.ToString("R");
-            this.SpeedY = textureSet.Speed.y.ToString("R");
+            this.SpeedX = Wind.windDirection.x.ToString(); ; //textureSet.Speed.x.ToString("R");
+            this.SpeedY = Wind.windDirection.y.ToString(); ; // textureSet.Speed.y.ToString("R");
         }
         public bool IsValid()
         {
@@ -205,7 +207,7 @@ namespace OverlaySystem
             InUse = false;
             Offset = new Vector2(0, 0);
             StartOffset = new Vector2(0, 0);
-            Speed = new Vector2(0, 0);
+            Speed = new Vector2(Wind.windDirection.x, Wind.windDirection.y);
             Scale = 1;
         }
         public TextureSet(ConfigNode textureNode, bool bump)
@@ -232,11 +234,11 @@ namespace OverlaySystem
                     ConfigNode speedNode = textureNode.GetNode("speed");
                     if (speedNode != null)
                     {
-                        Speed = new Vector2(float.Parse(speedNode.GetValue("x")), float.Parse(speedNode.GetValue("y")));
+                        Speed = new Vector2(Wind.windDirection.x, Wind.windDirection.y); //new Vector2(float.Parse(speedNode.GetValue("x")), float.Parse(speedNode.GetValue("y")));
                     }
                     else
                     {
-                        Speed = Vector2.zero;
+                        Speed = new Vector2(Wind.windDirection.x, Wind.windDirection.y);
                     }
                     String scale = textureNode.GetValue("scale");
                     if (scale != null)
@@ -284,8 +286,8 @@ namespace OverlaySystem
         {
             if (rotation)
             {
-                this.Offset.x = rateOffset * this.Speed.x;
-                this.Offset.y = rateOffset * this.Speed.y;
+                this.Offset.x = rateOffset * (Wind.windDirection.x * WeatherDatabase.GetOffSetMultiplier(FlightGlobals.currentMainBody)); //this.Speed.x;
+                this.Offset.y = rateOffset * (Wind.windDirection.y * WeatherDatabase.GetOffSetMultiplier(FlightGlobals.currentMainBody)); //this.Speed.y;
             }
             else
             {
@@ -307,8 +309,8 @@ namespace OverlaySystem
             this.Offset.x = this.StartOffset.x;
             this.Offset.y = this.StartOffset.y;
             this.Scale = float.Parse(textureSet.Scale);
-            this.Speed.x = float.Parse(textureSet.SpeedX);
-            this.Speed.y = float.Parse(textureSet.SpeedY);
+            this.Speed.x = Wind.windDirection.x; //float.Parse(textureSet.SpeedX);
+            this.Speed.y = Wind.windDirection.y; //float.Parse(textureSet.SpeedY);
         }
         public ConfigNode GetNode(string name)
         {
