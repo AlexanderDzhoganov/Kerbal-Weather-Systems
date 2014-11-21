@@ -20,6 +20,7 @@ namespace Weather
         public static Vector3 windDirection;
         public static float windSpeed;
         public static string WindDirectionLabel = string.Empty;
+        public static Vector3 vesselVector;
 
         private static double CurrentAtmoPressure;
         private static double HighestAtmoPressure;
@@ -29,6 +30,7 @@ namespace Weather
         private static float Temperature = HeadMaster.Temperature;
         private static double Altitude = HeadMaster.Altitude;
         private static float AtmoDensity;
+        private static Vector3 TradeWindTendancy;
 
         void Update()
         {
@@ -41,10 +43,12 @@ namespace Weather
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
 
+            Vessel vessel = FlightGlobals.ActiveVessel;
+
             CurrentAtmoPressure = FlightGlobals.getStaticPressure(Altitude);
             HighestAtmoPressure = FlightGlobals.getStaticPressure(0.0);
             //RecipDeltaAtmoPressure = (float)(1 / (HighestAtmoPressure - CurrentAtmoPressure));
-            AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity;
+            AtmoDensity = (float)vessel.atmDensity;
 
             //Data collection
             Longitude = HeadMaster.Longitude;
@@ -52,8 +56,6 @@ namespace Weather
             Temperature = HeadMaster.Temperature;
             Altitude = HeadMaster.Altitude;
             windSpeed = HeadMaster.windSpeed;
-
-            Vessel vessel = FlightGlobals.ActiveVessel;
 
         }
 
@@ -70,501 +72,7 @@ namespace Weather
             Vector3 North = Vector3.Cross(East, vessel.upAxis); //Get the reverse north axis
             North.Normalize();//Guess what? Normalize that shit
 
-            //Check for orbiting body and apply proper wind patterns
-            if(orbitingBodyName == "Kerbin")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    windDirection = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    windDirection = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    windDirection = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    windDirection = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-            
-            else if(orbitingBodyName == "Duna")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    windDirection = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    windDirection = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    windDirection = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    windDirection = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
-            else if(orbitingBodyName == "Eve")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    windDirection = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    windDirection = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    windDirection = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    windDirection = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
-            else if(orbitingBodyName == "Laythe")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    windDirection = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    windDirection = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    windDirection = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    windDirection = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
-            else if(orbitingBodyName == "Jool")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    windDirection = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    windDirection = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    windDirection = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    windDirection = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    windDirection = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    windDirection = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    windDirection = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    windDirection = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
-            else
-            {
-                Debug.Log("KWS: Orbiting body doesn't contain atmosphere or has not been added to climate database");
-            }
+            windDirection = WindDirTendancy(Latitude, orbitingBody);
 
             try
             {
@@ -578,7 +86,517 @@ namespace Weather
             }
         }
 
-        public void WindGusts(float windSpeed)
+        private static Vector3 WindDirTendancy(double latitude, CelestialBody body)
+        {
+            Vessel vessel = FlightGlobals.ActiveVessel;
+            CelestialBody orbitingBody = FlightGlobals.currentMainBody;
+            String orbitingBodyName = orbitingBody.bodyName;
+            Vector3 Up = vessel.upAxis; //get the up relative to the surface
+            Up.Normalize(); //normalize that shit
+            Vector3 East = Vector3.Cross(vessel.mainBody.angularVelocity, Up); //Get the reverse East axis
+            East.Normalize(); //Normalize that shit
+            Vector3 North = Vector3.Cross(East, vessel.upAxis); //Get the reverse north axis
+            North.Normalize();//Guess what? Normalize that shit
+
+            //Check for orbiting body and apply proper wind patterns
+            if (orbitingBodyName == "Kerbin")
+            {
+                //Trade wind stuff below
+                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
+                {
+                    //Debug.Log("Wind is Easterly!");
+                    //This area is nominally of lower pressure
+                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 2;
+                }
+
+                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
+                {
+                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 5;
+                }
+
+                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+
+                //Southern hemisphere
+                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
+                {
+                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 6;
+                }
+
+                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+
+                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
+                {
+                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+            }
+
+            else if (orbitingBodyName == "Duna")
+            {
+                //Trade wind stuff below
+                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
+                {
+                    //Debug.Log("Wind is Easterly!");
+                    //This area is nominally of lower pressure
+                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 2;
+                }
+
+                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
+                {
+                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 5;
+                }
+
+                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+
+                //Southern hemisphere
+                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
+                {
+                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 6;
+                }
+
+                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+
+                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
+                {
+                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+            }
+
+            else if (orbitingBodyName == "Eve")
+            {
+                //Trade wind stuff below
+                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
+                {
+                    //Debug.Log("Wind is Easterly!");
+                    //This area is nominally of lower pressure
+                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 2;
+                }
+
+                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
+                {
+                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 5;
+                }
+
+                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+
+                //Southern hemisphere
+                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
+                {
+                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 6;
+                }
+
+                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+
+                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
+                {
+                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+            }
+
+            else if (orbitingBodyName == "Laythe")
+            {
+                //Trade wind stuff below
+                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
+                {
+                    //Debug.Log("Wind is Easterly!");
+                    //This area is nominally of lower pressure
+                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 2;
+                }
+
+                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
+                {
+                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 5;
+                }
+
+                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+
+                //Southern hemisphere
+                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
+                {
+                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 6;
+                }
+
+                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+
+                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
+                {
+                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+            }
+
+            else if (orbitingBodyName == "Jool")
+            {
+                //Trade wind stuff below
+                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
+                {
+                    //Debug.Log("Wind is Easterly!");
+                    //This area is nominally of lower pressure
+                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 2;
+                }
+
+                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
+                {
+                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 5;
+                }
+
+                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+
+                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
+                {
+                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+
+
+                //Southern hemisphere
+                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
+                {
+                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 6;
+                }
+
+                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+
+                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
+                {
+                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
+                {
+                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+
+                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
+                {
+                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+
+                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
+                {
+                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+            }
+
+            else
+            {
+                Debug.Log("KWS: Orbiting body doesn't contain atmosphere or has not been added to climate database");
+            }
+            return TradeWindTendancy;
+        }
+
+        public void WindGusts(float windSpeed, Vector3 windDirection)
         {
 
         }
