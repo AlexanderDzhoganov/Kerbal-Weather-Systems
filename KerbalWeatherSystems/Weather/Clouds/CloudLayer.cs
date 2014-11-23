@@ -250,6 +250,7 @@ namespace Clouds
             CloudOverlay.UpdateRotation(mainTexture.Offset);
             if (detailTexture.InUse)
             {
+                //Debug.Log("Stuffs"); //called on main menu
                 detailTexture.UpdateOffset(rateOffset, false);
                 ScaledCloudMaterial.SetVector("_DetailOffset", detailTexture.Offset);
                 CloudMaterial.SetVector("_DetailOffset", detailTexture.Offset);

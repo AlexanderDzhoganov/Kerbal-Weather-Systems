@@ -99,8 +99,8 @@ namespace Weather
         public static float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
         public static float WindGustTime = 5.0f;
         public static float Temperature;
-        public static float TextureSpeedX;
-        public static float TextureSpeedY;
+        //public static float TextureSpeedX;
+        //public static float TextureSpeedY;
         //private float Anger = 1/3f; //You've found my easter egg!
 
         //Arrays
@@ -156,9 +156,10 @@ namespace Weather
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
             //windDirectionNumb = Random.Range(1, 9); //Set wind direction
+            windSpeed = 1.0f;
             windDirectionLabel = Wind.WindDirectionLabel;
             windDirectionNumb = Wind.windDirectionNumb;
-            windSpeed = 1.0f;
+            
 
             Debug.Log("WIND: setting wind function"); //Write to debug
             FARWind.SetWindFunction(windStuff); //Set the WindFunction to the windStuff Function
@@ -218,8 +219,6 @@ namespace Weather
 
             if (windSpeed != 0.0f)
             {
-                
-
                 
                 windDirectionLabel = Wind.WindDirectionLabel;
                 windDirectionNumb = Wind.windDirectionNumb;

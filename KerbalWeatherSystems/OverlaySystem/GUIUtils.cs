@@ -228,6 +228,7 @@ namespace OverlaySystem
                     }
                     else
                     {
+                        Debug.Log("Offset Zero");
                         Offset = Vector2.zero;
                         StartOffset = Vector2.zero;
                     }
@@ -284,17 +285,23 @@ namespace OverlaySystem
         }
         public void UpdateOffset(float rateOffset, bool rotation)
         {
-            if (rotation)
-            {
-                this.Offset.x = rateOffset * (Wind.windDirection.x * WeatherDatabase.GetOffSetMultiplier(FlightGlobals.currentMainBody)); //this.Speed.x;
-                this.Offset.y = rateOffset * (Wind.windDirection.y * WeatherDatabase.GetOffSetMultiplier(FlightGlobals.currentMainBody)); //this.Speed.y;
-            }
-            else
-            {
-                this.Offset.x += rateOffset * this.Speed.x;
-                this.Offset.y += rateOffset * this.Speed.y;
-                SaturateOffset();
-            }
+            //CelestialBody body = FlightGlobals.currentMainBody;
+
+                if (rotation)
+                {
+                    //Debug.Log("This one"); called in tandum with "or this one" at space center
+                    this.Offset.x = rateOffset * (Wind.windDirection.x * (WeatherDatabase.GetOffSetMultiplier())); //this.Speed.x;
+                    this.Offset.y = rateOffset * (Wind.windDirection.y * (WeatherDatabase.GetOffSetMultiplier())); //this.Speed.y;
+
+                }
+                else
+                {
+                    //Debug.Log("Or this one"); // called in tandum with "This one" at space center
+                    this.Offset.x += rateOffset * (Wind.windDirection.x * (WeatherDatabase.GetOffSetMultiplier()));
+                    this.Offset.y += rateOffset * (Wind.windDirection.y * (WeatherDatabase.GetOffSetMultiplier()));
+                    SaturateOffset();
+                }
+            
         }
         public void Clone(TextureSetGUI textureSet)
         {

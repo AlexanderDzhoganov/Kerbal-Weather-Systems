@@ -729,7 +729,7 @@ namespace Clouds
                 texFieldGS.active.textColor = errorColor;
                 texFieldGS.focused.textColor = errorColor;
             }
-            textureSet.SpeedX = GUI.TextField( new Rect(100, y, vectorWidth, 25), textureSet.SpeedX, texFieldGS);
+            textureSet.SpeedX = Wind.windDirection.x.ToString(); //GUI.TextField( new Rect(100, y, vectorWidth, 25), textureSet.SpeedX, texFieldGS);
 
             GUI.Label(new Rect(vectorStart, y, 25, 25), " Y:", labelGS);
             if (float.TryParse(Wind.windDirection.y.ToString(), out dummyFloat)) //(textureSet.SpeedY, out dummyFloat))
@@ -746,7 +746,7 @@ namespace Clouds
                 texFieldGS.active.textColor = errorColor;
                 texFieldGS.focused.textColor = errorColor;
             }
-            textureSet.SpeedY = GUI.TextField(new Rect(vectorStart + 25, y, vectorWidth, 25), textureSet.SpeedY, texFieldGS);
+            textureSet.SpeedY = Wind.windDirection.y.ToString();//GUI.TextField(new Rect(vectorStart + 25, y, vectorWidth, 25), textureSet.SpeedY, texFieldGS);
             return y + 30;
         }
     }

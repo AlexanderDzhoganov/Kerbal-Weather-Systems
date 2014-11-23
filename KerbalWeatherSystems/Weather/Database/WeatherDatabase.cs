@@ -13,28 +13,39 @@ namespace Database
     {
         private static float offSetMultiplier;
 
-        public static float GetOffSetMultiplier(CelestialBody body)
+        public static float GetOffSetMultiplier()
         {
-           //offset multipliers for 1m/s of windspeed.
-            if(body.bodyName == "Kerbin")
+            try
             {
-                offSetMultiplier = -0.0000025f;
+                CelestialBody body = FlightGlobals.currentMainBody;
+                //offset multipliers for 1m/s of windspeed.
+                if (body.bodyName == "Kerbin")
+                {
+                    offSetMultiplier = -0.0000025f;
+                }
+                else if (body.bodyName == "Laythe")
+                {
+                    offSetMultiplier = 0.00000011f;
+                }
+                else if (body.bodyName == "Duna")
+                {
+                    offSetMultiplier = 0.000003f;
+                }
+                else if (body.bodyName == "Eve")
+                {
+                    offSetMultiplier = -0.000001f;
+                }
+                else if (body.bodyName == "Jool")
+                {
+                    offSetMultiplier = 0.000005f;
+                }
+
+
             }
-            else if(body.bodyName == "Laythe")
+            catch
             {
-                offSetMultiplier = 0.00000011f;
-            }
-            else if(body.bodyName == "Duna")
-            {
-                offSetMultiplier = 0.000003f;
-            }
-            else if(body.bodyName == "Eve")
-            {
-                offSetMultiplier = -0.000001f;
-            }
-            else if(body.bodyName == "Jool")
-            {
-                offSetMultiplier = 0.000005f;
+                //Debug.Log("Null body");
+                offSetMultiplier = -0.0000025f; //default to kerbin's offset rate
             }
 
             return offSetMultiplier;
