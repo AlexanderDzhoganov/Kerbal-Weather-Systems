@@ -197,7 +197,7 @@ namespace Clouds
                 useEditor = HeadMaster.useEditor;
                 if (alt && Input.GetKeyDown(KeyCode.N))
                 {
-                   useEditor = !useEditor;
+                   //useEditor = !useEditor;
                 }
             }
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)

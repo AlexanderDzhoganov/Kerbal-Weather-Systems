@@ -25,6 +25,7 @@ using KSP.IO;
 using ferram4;
 using Weather;
 using Clouds;
+using Animations;
 
 using Random = UnityEngine.Random;
 
@@ -53,6 +54,7 @@ namespace Weather
         public bool isSnowing = false; //Is it Snowing?
         public bool isStorming = false; //Is it storming?
         public static bool useEditor = false;
+        public static bool inAtmosphere;
 
         //GUI Bool
         public bool isWindowOpen = true; //Value for GUI window open
@@ -94,6 +96,7 @@ namespace Weather
 
 
         //Floating point numbers
+        [Persistent]
         public static float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
         public float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //DO NOT make this static, it will kill things.
         public static float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
@@ -210,6 +213,9 @@ namespace Weather
             Part part = vessel.rootPart;
             float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //Casts the double received into a float
 
+            if (FlightGlobals.ActiveVessel.atmDensity == 0) { inAtmosphere = false; }
+            else { inAtmosphere = true; }
+
             //Data Collection:
             Latitude = vessel.latitude;
             Longitude = vessel.longitude;
@@ -222,15 +228,6 @@ namespace Weather
                 
                 windDirectionLabel = Wind.WindDirectionLabel;
                 windDirectionNumb = Wind.windDirectionNumb;
-
-
-                Vector3 Up = vessel.upAxis; //get the up relative to the surface
-                Up.Normalize(); //normalize that shit
-                Vector3 East = Vector3.Cross(vessel.mainBody.angularVelocity, Up); //Get the reverse East axis
-                East.Normalize(); //Normalize that shit
-                Vector3 North = Vector3.Cross(vessel.upAxis, East); //Get the reverse north axis
-                North.Normalize();//Guess what? Normalize that shit
-
 
                 //Defines the Wind Speed stuff
                 switch (windDirectionNumb)
@@ -283,10 +280,10 @@ namespace Weather
 
                 }
 
-                Wind.FixedUpdate();
+                //Wind.FixedUpdate();
 
                 //Killing the wind
-                if (Wind.KillingWind == true) { windSpeed = Wind.KillWind(windSpeed); }
+                //if (Wind.KillingWind == true) { windSpeed = Wind.KillWind(windSpeed); }
 
                 //Starting the wind gusts
                 if(Wind.isWindStorm == true && Wind.KillingWind == false) {windSpeed = Wind.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
@@ -505,7 +502,7 @@ namespace Weather
                 //Setting wind speed block
                 GUILayout.BeginVertical();
                 GUILayout.Height(350);
-                GUILayout.Label("Wind Speed:"); windSpeedString = GUILayout.TextField(windSpeedString,15); //Does the textfield for setting the wind.
+                GUILayout.Label("Wind Speed: km/h"); windSpeedString = GUILayout.TextField(windSpeedString,10); //Does the textfield for setting the wind.
                 GUILayout.EndVertical();
 
                 GUILayout.BeginVertical();
@@ -513,15 +510,17 @@ namespace Weather
                 if (GUILayout.Button("Set")) 
                 {
                     if (windSpeedString == "" || windSpeedString == "0" || windSpeedString == "0.0") { windSpeedString = "0.00"; }
+                    //Debug.Log(windSpeedString);
                     windSpeedCheck = float.Parse(windSpeedString);
-
-                    if (windSpeedCheck > 1000.0f)
+                    //Debug.Log(windSpeedCheck);
+                    if (windSpeedCheck > 750.0f)
                     {
                         windSpeed = 0.00f;
                     }
                     else
                     {
-                        windSpeed = windSpeedCheck;
+                        windSpeed = windSpeedCheck * 0.277778f;
+                        
                     }
                 }
                 
@@ -682,10 +681,10 @@ namespace Weather
             
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Max wind gust speed: " + MaxWindGustSpeed + " m/s"); WSMGSString = GUILayout.TextField(WSMGSString, 8); //Does the textfield for setting the maximum gust speed
+            GUILayout.Label("Max wind gust speed: " + MaxWindGustSpeed + " km/h"); WSMGSString = GUILayout.TextField(WSMGSString, 8); //Does the textfield for setting the maximum gust speed
             if (GUILayout.Button("Set"))
             {
-                MaxWindGustSpeed = float.Parse(WSMGSString);
+                MaxWindGustSpeed = float.Parse(WSMGSString) * 0.27777778f;
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
@@ -748,7 +747,7 @@ namespace Weather
             GUILayout.Label("Atmo. Dens: " + FlightGlobals.ActiveVessel.atmDensity.ToString("0.0000"));
             GUILayout.Label("Temp: " + FlightGlobals.ActiveVessel.flightIntegrator.getExternalTemperature().ToString("0.00"));
             GUILayout.Label("Wind Direction: " + windDirectionLabel);
-            GUILayout.Label("Wind Speed: " + windSpeed + " m/s");
+            GUILayout.Label("Wind Speed: " + (windSpeed * 3.6).ToString("0.000") + " km/h");
             GUILayout.EndVertical();
 
             GUI.DragWindow();
