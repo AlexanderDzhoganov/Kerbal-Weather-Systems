@@ -252,7 +252,7 @@ namespace Clouds
             {
                 current = FlightGlobals.currentMainBody;
             }
-            if (useEditor && current != null)
+            if (HeadMaster.useEditor && current != null)
             {
                 if (AdvancedGUI)
                 {

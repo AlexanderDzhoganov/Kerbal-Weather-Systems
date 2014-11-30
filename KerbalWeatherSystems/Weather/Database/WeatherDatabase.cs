@@ -21,7 +21,7 @@ namespace Database
                 //offset multipliers for 1m/s of windspeed.
                 if (body.bodyName == "Kerbin")
                 {
-                    offSetMultiplier = -0.0000025f;
+                    offSetMultiplier = 0.0000025f;
                 }
                 else if (body.bodyName == "Laythe")
                 {

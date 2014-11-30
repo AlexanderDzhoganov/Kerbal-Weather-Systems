@@ -202,10 +202,10 @@ namespace Weather
         /*
 * Called at a fixed time interval determined by the physics time step.
 */
+        double timeUntilUpdate = 0;
         void FixedUpdate()
         {
 
-            
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
 
@@ -221,7 +221,16 @@ namespace Weather
             Longitude = vessel.longitude;
             Altitude = vessel.altitude;
             Temperature = vessel.flightIntegrator.getExternalTemperature();
+            windSpeed = Wind.windSpeed;
             //Debug.Log(AtmoDensity.ToString());
+
+            timeUntilUpdate += 0.02;
+            if(timeUntilUpdate >= 1.0) //Do stuff every second
+            {
+                //Debug.Log(timeUntilUpdate);
+                timeUntilUpdate = 0;
+            }
+            
 
             if (windSpeed != 0.0f)
             {
@@ -354,7 +363,7 @@ namespace Weather
             if (showWindControls)
             {
 
-                WindGUI = GUI.Window(windGUIID, WindGUI, WindControls, "Wind~");
+                //WindGUI = GUI.Window(windGUIID, WindGUI, WindControls, "Wind~");
 
             }
 
@@ -419,7 +428,7 @@ namespace Weather
             if (isWindowOpen == true)
             {
                 //if (GUILayout.Button("Minimize")) { isWindowOpen = false; MainGUI.height = 0; MainGUI.width = 0; } //Button for resizing the GUI
-                showWindControls = GUILayout.Toggle(showWindControls, "Wind"); //Do the Toggle bullshittery, then Call the Wind Control Panel
+                //showWindControls = GUILayout.Toggle(showWindControls, "Wind"); //Do the Toggle bullshittery, then Call the Wind Control Panel
                 showRainControls = GUILayout.Toggle(showRainControls, "Rain"); //Do the Toggle bullshittery, then Call the Rain Control Panel
                 showCloudControls = GUILayout.Toggle(showCloudControls, "Clouds"); //Do the Toggle bullshittery, then Call the Clouds Control Panel
                 showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); //Do the Toggle bullshittery, then Call the Snow Control Panel
@@ -476,6 +485,7 @@ namespace Weather
 
         }
 
+        /*
         void WindControls(int WindID) //Wind Control Panel
         {
             //GUILayout.BeginHorizontal();
@@ -490,7 +500,7 @@ namespace Weather
             {
             WindVectorLine();
             }
-            */
+            
 
             if (Pressure != 0) //If we are in atmosphere load the in atmo GUI
             {
@@ -566,7 +576,7 @@ namespace Weather
                 }
 
                 GUILayout.EndHorizontal();
-                 */
+                 
                 //GUILayout.EndVertical();
 
                 GUI.DragWindow();
@@ -584,7 +594,7 @@ namespace Weather
             }
 
         }
-
+        */
         /*
         void WindSettings(int windowId)
         {
@@ -746,8 +756,8 @@ namespace Weather
             GUILayout.Label("Atmo. Press: " + FlightGlobals.ActiveVessel.staticPressure.ToString("0.0000"));
             GUILayout.Label("Atmo. Dens: " + FlightGlobals.ActiveVessel.atmDensity.ToString("0.0000"));
             GUILayout.Label("Temp: " + FlightGlobals.ActiveVessel.flightIntegrator.getExternalTemperature().ToString("0.00"));
-            GUILayout.Label("Wind Direction: " + windDirectionLabel);
-            GUILayout.Label("Wind Speed: " + (windSpeed * 3.6).ToString("0.000") + " km/h");
+            GUILayout.Label("Wind Direction: " + windDirection);
+            GUILayout.Label("Wind Speed: " + (windSpeed).ToString("0.000") + " km/h");
             GUILayout.EndVertical();
 
             GUI.DragWindow();
