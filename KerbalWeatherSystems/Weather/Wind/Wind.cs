@@ -46,7 +46,7 @@ namespace Weather
         private static float WindGustTime;
         private double windTime;
         private float targetWindSpeed;
-        private static bool isWindVectorChanging = false;
+        private static bool isWindVectorChanging = true;
 
         public void Awake()
         {
@@ -85,6 +85,7 @@ namespace Weather
             //windSpeed = HeadMaster.windSpeed;
             MaxWindGustSpeed = HeadMaster.MaxWindGustSpeed;
             WindGustTime = HeadMaster.WindGustTime;
+            windSpeed = windDirection.magnitude;//ChangeWindSpeed(windSpeed, windDirection.magnitude);
 
             second += 0.02;
             windTime -= 0.02;
@@ -105,8 +106,8 @@ namespace Weather
                 //Do the wind gust change
                 targetWindSpeed = UnityEngine.Random.Range(0, 25);
                 windTime = UnityEngine.Random.Range(0, 25);
-                windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed);
-                isWindChanging = true;
+                //windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed);
+                //isWindChanging = true;
                 //windSecond = 0;
             }
 
@@ -120,7 +121,7 @@ namespace Weather
 
             if (KillingWind == true) { windSpeed = KillWind(windSpeed); }
             if (isWindStorm == true) { windSpeed = WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime); }
-            if (isWindChanging == true) { windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed); }
+            //if (isWindChanging == true) { windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed); }
             if (isWindGust == true) { windGustDirection = ChangeWindVector(windDirection, windGustDirection); }
 
         }
@@ -138,9 +139,11 @@ namespace Weather
             Vector3 North = Vector3.Cross(East, vessel.upAxis); //Get the reverse north axis
             North.Normalize();//Guess what? Normalize that shit
 
-            windDirection.x = Mathf.Max(windGustDirection.x, localWindVector.x, WindDirTendancy(Latitude, orbitingBody).x, WindGust.x);
-            windDirection.y = Mathf.Max(windGustDirection.y, localWindVector.y, WindDirTendancy(Latitude, orbitingBody).y, WindGust.y);
-            windDirection.z = Mathf.Max(windGustDirection.z, localWindVector.z, WindDirTendancy(Latitude, orbitingBody).z, WindGust.z);
+
+            windDirection = windGustDirection + localWindVector; //+ WindDirTendancy(Latitude, orbitingBody); //+ WindGust;
+            //windDirection.x = Mathf.Max(windGustDirection.x, localWindVector.x, WindDirTendancy(Latitude, orbitingBody).x, WindGust.x);
+            //windDirection.y = Mathf.Max(windGustDirection.y, localWindVector.y, WindDirTendancy(Latitude, orbitingBody).y, WindGust.y);
+            //windDirection.z = Mathf.Max(windGustDirection.z, localWindVector.z, WindDirTendancy(Latitude, orbitingBody).z, WindGust.z);
 
             try
             {
@@ -180,16 +183,26 @@ namespace Weather
                     TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 2;
                 }
+                else //kerbin like weather patterns
+                {
+                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 2;
+                }
             }
             else if(latitude > 5 && latitude <= 10)
             {
                 if (body.name == "Kerbin") //Hadley Cell, North Easterly trade wind
                 {
-                    TradeWindTendancy = Vector3.Cross(North * (windSpeed * (float)CurrentAtmoPressure), coriolisAcc);// * RecipDeltaAtmoPressure);
-                    //TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    //TradeWindTendancy = Vector3.Cross(North * (windSpeed * (float)CurrentAtmoPressure), coriolisAcc);// * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     //windDirectionNumb = 5;
                     windDirectionNumb = 1;
 
+                }
+                else //Kerbin like weather patterns
+                {
+                    TradeWindTendancy = Vector3.Cross(North * (windSpeed * (float)CurrentAtmoPressure), coriolisAcc);// * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
                 }
             }
             else if(latitude > 10 && latitude <= 15)
@@ -871,10 +884,10 @@ namespace Weather
                 timeUntilGust = UnityEngine.Random.Range(0, 10);
                 float numberx = UnityEngine.Random.Range(-20, 20);
                 float numbery = UnityEngine.Random.Range(-20, 20);
-                float numberz = UnityEngine.Random.Range(-10, 10);
+                //float numberz = UnityEngine.Random.Range(-10, 10);
                 //float windGustSpeed = UnityEngine.Random.Range(0,10);
 
-                WindGust = new Vector3(numberx, numbery, numberz);
+                WindGust = new Vector3(numberx, numbery, 0);
                 isWindVectorChanging = true;
                 ChangeWindVector(windDirection, WindGust);
 
