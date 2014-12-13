@@ -193,11 +193,11 @@ namespace Clouds
                     //Debug.Log("Performing Update"); Called on MainMenu
                     layer.PerformUpdate();
                 }
-                bool alt = (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
+                bool alt = (GameSettings.MODIFIER_KEY.GetKey());
                 useEditor = HeadMaster.useEditor;
                 if (alt && Input.GetKeyDown(KeyCode.N))
                 {
-                   //useEditor = !useEditor;
+                   useEditor = !useEditor;
                 }
             }
             if (HighLogic.LoadedScene == GameScenes.FLIGHT)

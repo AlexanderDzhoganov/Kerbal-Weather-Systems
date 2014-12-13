@@ -85,7 +85,7 @@ namespace Weather
             //windSpeed = HeadMaster.windSpeed;
             MaxWindGustSpeed = HeadMaster.MaxWindGustSpeed;
             WindGustTime = HeadMaster.WindGustTime;
-            windSpeed = windDirection.magnitude;//ChangeWindSpeed(windSpeed, windDirection.magnitude);
+            //windSpeed = ChangeWindSpeed(windSpeed, windDirection.magnitude);
 
             second += 0.02;
             windTime -= 0.02;
@@ -96,8 +96,9 @@ namespace Weather
                 //Debug.Log(windTime);
                 //Debug.Log(windSpeed);
                 //if (isWindChanging == true) { Debug.Log("Wind Changing"); }
-                Debug.Log(timeUntilGust);
-                Debug.Log(windGustDirection);
+                //Debug.Log(timeUntilGust);
+                //Debug.Log(windGustDirection);
+                //Debug.Log(FlightGlobals.getCoriolisAcc(windDirection, FlightGlobals.currentMainBody));
                 second = 0; 
             }
 
@@ -106,8 +107,8 @@ namespace Weather
                 //Do the wind gust change
                 targetWindSpeed = UnityEngine.Random.Range(0, 25);
                 windTime = UnityEngine.Random.Range(0, 25);
-                //windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed);
-                //isWindChanging = true;
+                windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed);
+                isWindChanging = true;
                 //windSecond = 0;
             }
 
@@ -121,7 +122,7 @@ namespace Weather
 
             if (KillingWind == true) { windSpeed = KillWind(windSpeed); }
             if (isWindStorm == true) { windSpeed = WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime); }
-            //if (isWindChanging == true) { windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed); }
+            if (isWindChanging == true) { windSpeed = ChangeWindSpeed(windSpeed, targetWindSpeed); }
             if (isWindGust == true) { windGustDirection = ChangeWindVector(windDirection, windGustDirection); }
 
         }
@@ -140,10 +141,12 @@ namespace Weather
             North.Normalize();//Guess what? Normalize that shit
 
 
-            windDirection = windGustDirection + localWindVector; //+ WindDirTendancy(Latitude, orbitingBody); //+ WindGust;
+            windDirection = windGustDirection + localWindVector + WindDirTendancy(Latitude, orbitingBody) + WindGust;
             //windDirection.x = Mathf.Max(windGustDirection.x, localWindVector.x, WindDirTendancy(Latitude, orbitingBody).x, WindGust.x);
             //windDirection.y = Mathf.Max(windGustDirection.y, localWindVector.y, WindDirTendancy(Latitude, orbitingBody).y, WindGust.y);
             //windDirection.z = Mathf.Max(windGustDirection.z, localWindVector.z, WindDirTendancy(Latitude, orbitingBody).z, WindGust.z);
+            //windDirection.Normalize(); //Surprise! Normalize!
+            windDirection = windDirection.normalized * windSpeed;
 
             try
             {
@@ -172,7 +175,6 @@ namespace Weather
 
             //Debug.Log(coriolisAcc);
             
-
             if (latitude >= -5 && latitude <= 5)
             {
                 if (body.name == "Kerbin")//Easterly trade wind at the Inter-Tropical Convergence zone
@@ -180,12 +182,12 @@ namespace Weather
                     //FlightGlobals.getCoriolisAcc(TradeWindTendancy, body);
                     //Debug.Log("Wind is Easterly!");
                     //This area is nominally of lower pressure
-                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    TradeWindTendancy = -East * ((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 2;
                 }
                 else //kerbin like weather patterns
                 {
-                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    TradeWindTendancy = -East * ((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 2;
                 }
             }
@@ -194,22 +196,26 @@ namespace Weather
                 if (body.name == "Kerbin") //Hadley Cell, North Easterly trade wind
                 {
                     //TradeWindTendancy = Vector3.Cross(North * (windSpeed * (float)CurrentAtmoPressure), coriolisAcc);// * RecipDeltaAtmoPressure);
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    //windDirectionNumb = 5;
-                    windDirectionNumb = 1;
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 5;
 
                 }
                 else //Kerbin like weather patterns
                 {
-                    TradeWindTendancy = Vector3.Cross(North * (windSpeed * (float)CurrentAtmoPressure), coriolisAcc);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
+                    TradeWindTendancy = (North + -East).normalized;
+                    windDirectionNumb = 5;
                 }
             }
             else if(latitude > 10 && latitude <= 15)
             {
                 if (body.name == "Kerbin") //Hadley Cell, North Easterly trade wind
                 {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 5;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 5;
                 }
             }
@@ -217,7 +223,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Hadley Cell, Northerly trade wind.
                 {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = North; // *((float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+                else
+                {
+                    TradeWindTendancy = North; // *((float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
                     windDirectionNumb = 1;
                 }
             }
@@ -225,7 +236,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
                 {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 8;
                 }
             }
@@ -233,7 +249,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Sub-tropical Ridge, Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -241,7 +262,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Sub-tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -249,7 +275,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Sub-tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -257,7 +288,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Ferrel cell, Mid-Latitude. South Westerlies
                 {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 7;
                 }
             }
@@ -265,7 +301,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Ferrel Cell, Mid-Latitude, South westerlies
                 {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 7;
                 }
             }
@@ -273,7 +314,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Ferrel Cell, Mid-Latitude, South Westerlies
                 {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 7;
                 }
 
@@ -282,7 +328,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Ferrel cell - Polar Front, Entering Jet stream, Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -290,7 +341,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Front - Polar Vortex, leaving Jet Stream, Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -298,7 +354,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Vortex, North Easterlies
                 {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 5;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 5;
                 }
 
@@ -307,7 +368,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar vortex, North Easterlies
                 {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 5;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 5;
                 }
             }
@@ -315,7 +381,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar vortex, North Easterlies
                 {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 5;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 5;
                 }
             }
@@ -323,7 +394,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin") //Polar vortex, North Easterlies
                 {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 5;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 5;
                 }
             }
@@ -331,7 +407,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin") //Polar Limit, Northerlies
                 {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    TradeWindTendancy = North; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 1;
+                }
+                else
+                {
+                    TradeWindTendancy = North; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
                     windDirectionNumb = 1;
                 }
             }
@@ -341,7 +422,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//ITCZ - Hadley Cell, South Easterlies
                 {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 6;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 6;
                 }
             }
@@ -349,7 +435,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Hadley Cell, South Easterlies
                 {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 6;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 6;
                 }
             }
@@ -357,7 +448,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Hadley Cell, Southerlies
                 {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = -North; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+                else
+                {
+                    TradeWindTendancy = -North; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 3;
                 }
             }
@@ -365,7 +461,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Hadley Cell, Southerlies
                 {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = -North; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+                else
+                {
+                    TradeWindTendancy = -North; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 3;
                 }
             }
@@ -373,7 +474,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Hadley Cell - Sub-Tropical Ridge, North Westerlies
                 {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 8;
                 }
             }
@@ -381,7 +487,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Sub-Tropical Ridge, Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -389,7 +500,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Sub-Tropical Ridge - Ferrel Cell, North Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -397,7 +513,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Ferrel Cell, South Westerlies
                 {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 7;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 7;
                 }
 
@@ -406,7 +527,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Ferrel Cell, North Westerlies
                 {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 8;
                 }
             }
@@ -414,7 +540,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Ferrel Cell, North Westerlies
                 {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
+                    windDirectionNumb = 8;
+                }
+                else
+                {
+                    TradeWindTendancy = (North + East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
                     windDirectionNumb = 8;
                 }
             }
@@ -422,7 +553,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Front, Entering Jet Stream, Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
             }
@@ -430,7 +566,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Vortex, Leaving Jet Stream, Westerlies
                 {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 4;
+                }
+                else
+                {
+                    TradeWindTendancy = East; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
                     windDirectionNumb = 4;
                 }
 
@@ -439,7 +580,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Vortex, South Easterlies
                 {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 6;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 6;
                 }
             }
@@ -447,7 +593,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Vortex, South Easterlies
                 {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 6;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 6;
                 }
             }
@@ -455,7 +606,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Vortex, South Easterlies
                 {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 6;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 6;
                 }
             }
@@ -463,7 +619,12 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Vortex, South Easterlies
                 {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    TradeWindTendancy = (North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
+                    windDirectionNumb = 6;
+                }
+                else
+                {
+                    TradeWindTendancy = (-North + -East).normalized; // *((float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
                     windDirectionNumb = 6;
                 }
             }
@@ -471,403 +632,15 @@ namespace Weather
             {
                 if (body.name == "Kerbin")//Polar Maximum, Southerlies
                 {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    TradeWindTendancy = -North; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
+                    windDirectionNumb = 3;
+                }
+                else
+                {
+                    TradeWindTendancy = -North; // *((float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
                     windDirectionNumb = 3;
                 }
             }
-
-            else if (orbitingBodyName == "Duna")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
-            else if (orbitingBodyName == "Eve")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
-            else if (orbitingBodyName == "Laythe")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
-            else if (orbitingBodyName == "Jool")
-            {
-                //Trade wind stuff below
-                if (Latitude >= -5 && Latitude <= 5) //Easterly trade wind at the Inter-Tropical Convergence zone
-                {
-                    //Debug.Log("Wind is Easterly!");
-                    //This area is nominally of lower pressure
-                    TradeWindTendancy = -East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 2;
-                }
-
-                if (Latitude > 5 && Latitude <= 15) //Hadley Cell, North Easterly trade wind
-                {
-                    TradeWindTendancy = (North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure); 
-                    windDirectionNumb = 5;
-                }
-
-                if (Latitude > 15 && Latitude <= 20) //Hadley Cell, Northerly trade wind.
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure);// * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-                if (Latitude > 20 && Latitude <= 27) //Hadley Cell - Sub-Tropical Ridge, North Westerly trade wind
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 27 && Latitude <= 33) //Sub-tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 33 && Latitude <= 40) //Sub-Tropical Ridge - Ferrel Cell, Mid-Latitude. Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude > 40 && Latitude <= 80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 8;
-                }
-
-                if (Latitude > 80 && Latitude <= 90) //Extreme high polar region, High Pressure, Northerlies
-                {
-                    TradeWindTendancy = North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 1;
-                }
-
-
-                //Southern hemisphere
-                if (Latitude < -5 && Latitude >= -15) //ITCZ - Hadley Cell, South Easterlies 
-                {
-                    TradeWindTendancy = (-North + -East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 6;
-                }
-
-                if (Latitude < -15 && Latitude >= -20) //Hadley Cell, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-
-                if (Latitude < -20 && Latitude >= -27) //Hadley Cell - Sub-Tropical Ridge, North Westerlies
-                {
-                    TradeWindTendancy = (North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -27 && Latitude >= -33) //Sub-Tropical Ridge, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -33 && Latitude >= -40)//Sub-Tropical Ridge - Ferrel Cell, Westerlies
-                {
-                    TradeWindTendancy = East * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 4;
-                }
-
-                if (Latitude < -40 && Latitude >= -80) //Ferrel Cell - Polar Cell/Vortex, High Latitude. High Pressure, South Westerlies
-                {
-                    TradeWindTendancy = (-North + East).normalized * (windSpeed * (float)CurrentAtmoPressure); // * RecipDeltaAtmoPressure);
-                    windDirectionNumb = 7;
-                }
-
-                if (Latitude < -80 && Latitude >= -90) //Polar Cell, High Latitude, High Pressure, Southerlies
-                {
-                    TradeWindTendancy = -North * (windSpeed * (float)CurrentAtmoPressure); //* RecipDeltaAtmoPressure);
-                    windDirectionNumb = 3;
-                }
-            }
-
             else
             {
                 Debug.Log("KWS: Orbiting body doesn't contain atmosphere or has not been added to climate database");

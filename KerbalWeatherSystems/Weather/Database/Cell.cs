@@ -12,7 +12,7 @@ using KSP.IO;
 namespace Database
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
-    class CellStartup : MonoBehaviour
+    public class CellStartup : MonoBehaviour
     {
         //Public Variables
         //public Array[] Cell = new Cell[];
@@ -44,34 +44,17 @@ namespace Database
 
         private CelestialBody body;
 
-        private static List<Cell> cells = new List<Cell>();
+        //private List<Cell> cells = new List<Cell>();
+        private Array KWSBody;
+        //private Array Cells;
+        
 
         internal void getCellVariables()
         {
 
         }
 
-        int i;
-        double altitude = 0;
-        internal void GenerateNewCells()
-        {
-            if(body.atmosphere)
-            {
-                for(double latitude = -90; latitude < 90; latitude += 0.1)
-                {
-                    for(double longitude = -180; longitude < 180; longitude += 0.1)
-                    {
-                        Cell newCell = new Cell(latitude, longitude, altitude);
-                        newCell.numberOfCells++;
-                        cells.Add(newCell);
-                        
-                    }
-                }
-
-            }
-            else {i++; body = FlightGlobals.Bodies[i];}
-
-        }
+        
 
         
     }
@@ -84,9 +67,12 @@ namespace Database
         //Private Variables
         private CelestialBody body = FlightGlobals.Bodies[0];
         private string bodyName;
+        private Vector3 cellWindDirTendancy;
+        private static Vector3 cellPosition;
+        private static int numberOfCells;
 
         //Public Variables
-        public int numberOfCells;
+        //public int numberOfCells;
         public bool isCellStorming;
         public bool isCellRaining;
         public bool isCellClouded;
@@ -97,25 +83,48 @@ namespace Database
         public int CellID;
 
 
-        public double cellPressure;
-        public double cellTemperature;
-        public double cellHumidity;
-        public double cellLatMin;
-        public double cellLatMax;
-        public double cellLongMin;
-        public double cellLongMax;
+        public double Pressure;
+        public double Temperature;
+        public double Humidity;
+        public double Latitude;
+        public double LatMax;
+        public double Longitude;
+        public double LongMax;
+        public double Altitude;
 
-        private Vector3 cellWindDirTendancy;
-        private Vector3 cellPosition;
-
-
+        public static Cell[] Cells = new Cell[numberOfCells];
 
         int i;
+        double altitude = 0;
+        internal void GenerateNewCells()
+        {
+            if (body.atmosphere)
+            {
+                for (double latitude = -90; latitude < 90; latitude += Settings.cellDefinitionWidth)
+                {
+                    for (double longitude = -180; longitude < 180; longitude += (Settings.cellDefinitionWidth * 2))
+                    {
+                        Cell newCell = new Cell(latitude, longitude, altitude);
+                        newCell.Latitude = latitude;
+                        newCell.Longitude = longitude;
+                        newCell.Altitude = altitude;
+                        numberOfCells++;
+                        CellID++;
+                        Cells[CellID] = newCell;
+                        //cells.Add(newCell);
+
+                    }
+                }
+                altitude += Settings.cellDefinitionAlt;
+            }
+            else { i++; body = FlightGlobals.Bodies[i]; }
+        }
+
         public Cell(double latitude, double longitude, double altitude)
         {
             cellPosition = body.GetWorldSurfacePosition(latitude, longitude, altitude);
-            cellTemperature = FlightGlobals.getExternalTemperature(cellPosition);
-            cellPressure = FlightGlobals.getStaticPressure(cellPosition);
+            double Temperature = FlightGlobals.getExternalTemperature(cellPosition);
+            double Pressure = FlightGlobals.getStaticPressure(cellPosition);
         }
 
     }

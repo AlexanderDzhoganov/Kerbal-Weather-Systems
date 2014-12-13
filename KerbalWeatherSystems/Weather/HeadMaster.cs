@@ -53,7 +53,7 @@ namespace Weather
         public bool isRaining = false; //Is it Raining?
         public bool isSnowing = false; //Is it Snowing?
         public bool isStorming = false; //Is it storming?
-        public static bool useEditor = false;
+        public static bool useEditor;
         public static bool inAtmosphere;
 
         //GUI Bool

@@ -14,83 +14,115 @@ namespace Database
         //Public Variables
         public static Cell Cell;
 
-        //Private Variables
         //Bools
-        private static bool isCellStorming;
-        private static bool isCellRaining;
-        private static bool isCellClouded;
-        private static bool isCellSnowing;
-        private static bool isCellDaytime;
-        private static bool isCellHigherPressure;
+        public bool isCellStorming;
+        public bool isCellRaining;
+        public bool isCellClouded;
+        public bool isCellSnowing;
+        public bool isCellDaytime;
+        //private static bool isCellHigherPressure;
+
+        //Ints
+        
+
+        //Doubles
+        /*
+        public static double cellPressure;
+        public static double cellTemperature;
+        public static double cellHumidity;
+        public static double cellLat;
+        public static double cellLatMax;
+        public static double cellLong;
+        public static double cellLongMax;
+        public static double cellAltitude;
+         */
 
         //Floats
-        private static float offSetMultiplier;
+
+        //Strings
+        
+
+        //Vector2
+
+        //Vector3
+        
+
+        //Arrays
+
+
+        //Private Variables
+        //Bools
 
         //Ints
         private static int CellID;
         private static int numberOfCells;
 
         //Doubles
-        private static double cellPressure;
-        private static double cellTemperature;
-        private static double cellHumidity;
-        private static double cellLatMin;
-        private static double cellLatMax;
-        private static double cellLongMin;
-        private static double cellLongMax;
-        private static double cellAltitude;
+
+        //Floats
+        private static float offSetMultiplier;
 
         //Strings
-        private static string bodyName;
+        private string bodyName;
+
+        //Vector2
 
         //Vector3
-        private static Vector3 cellWindDirTendancy;
+        private Vector3 cellWindDirTendancy;
+
+        //Arrays
 
         
         public static bool isCellHigherPressure(int CellIDA, int CellIDB)
         {
-            double CellAPressure = Cell.Cell[CellIDA].Pressure;
-            double CellBPressure = Cell.Cell[CellIDB].Pressure;
+            double CellAPressure = 1; // = Cell.Cell[CellIDA].Pressure;
+            double CellBPressure = 2; // = Cell.Cell[CellIDB].Pressure;
 
             if (CellAPressure > CellBPressure) { return true; }
             else { return false; }
             
         }
 
-        public static int getNumberOfCells()
+        public static int getNumberOfCells(CelestialBody Body)
         {
-            numberOfCells = Cell.Cell.Length;
+            //numberOfCells = Cell.Cell.Length;
             return numberOfCells;
         }
 
         public static double getCellAltitude(int CellID)
         {
+            double cellAltitude = Cell.Cells[CellID].Altitude;
             return cellAltitude;
         }
 
-        public static double getCellLong()
+        public static double getCellLong(int CellID)
         {
-            return cellLongMax;
+            double Longitude = Cell.Cells[CellID].Longitude;
+            return Longitude;
         }
 
-        public static double getCellLat()
+        public static double getCellLat(int CellID)
         {
-            return cellLatMax;
+            double Latitude = Cell.Cells[CellID].Latitude;
+            return Latitude;
         }
 
-        public static double getCellHumidity()
+        public static double getCellHumidity(int CellID)
         {
-            return cellHumidity;
+            double Humidity = Cell.Cells[CellID].Humidity;
+            return Humidity;
         }
 
-        public static double getCellTemperature()
+        public static double getCellTemperature(int CellID)
         {
-            return cellTemperature;
+            double Temperature = Cell.Cells[CellID].Temperature;
+            return Temperature;
         }
 
-        public static double getCellPressure()
+        public static double getCellPressure(int CellID)
         {
-            return cellPressure;
+            double Pressure = Cell.Cells[CellID].Pressure;
+            return Pressure;
         }
 
         public static int getCellID()
