@@ -59,17 +59,19 @@ namespace Database
         
     }
 
-    [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
-    public class Cell : MonoBehaviour 
+    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
+    public class Cell : MonoBehaviour, IConfigNode
     {
-        
+
 
         //Private Variables
-        private CelestialBody body = FlightGlobals.Bodies[0];
-        private string bodyName;
-        private Vector3 cellWindDirTendancy;
-        private static Vector3 cellPosition;
+        private static CelestialBody body = FlightGlobals.Bodies[0];
+        //private string bodyName;
+        //private Vector3 cellWindDirTendancy;
+        //private static Vector3 cellPosition;
         private static int numberOfCells;
+        //private static int numberOfKWSBodies;
+        private CelestialBody cellBody;
 
         //Public Variables
         //public int numberOfCells;
@@ -80,52 +82,167 @@ namespace Database
         public bool isCellDaytime;
         public bool isCellHigherPressure;
 
-        public int CellID;
-
-
         public double Pressure;
-        public double Temperature;
+        public float Temperature;
         public double Humidity;
         public double Latitude;
-        public double LatMax;
+        //public double LatMax;
         public double Longitude;
-        public double LongMax;
+        //public double LongMax;
         public double Altitude;
 
+        public float WindSpeed;
+
+        public Vector3 CellWindDirection;
+        public Vector3 CellPosition;
+
         public static Cell[] Cells = new Cell[numberOfCells];
+        //public static Array KWSBODY = new Array[numberOfKWSBodies];
+        public static Dictionary<CelestialBody, List<Cell>> KWSBODY = new Dictionary<CelestialBody, List<Cell>>();
 
-        int i;
-        double altitude = 0;
-        internal void GenerateNewCells()
+
+
+        void Awake()
         {
-            if (body.atmosphere)
+            //Debug.Log("Awake!");
+            GenerateNewCells();
+        }
+        void FixedUpdate()
+        {
+            //Debug.Log("Fixed Update");
+            UpdateCellData();
+        }
+
+        public void Save(ConfigNode node)
+        {
+
+        }
+        public void Load(ConfigNode node)
+        {
+
+        }
+
+        static int CellID;
+        internal static void GenerateNewCells()
+        {
+            Debug.Log("Generating New Cells!");
+            double altitude = 0;
+
+            foreach (CelestialBody body in FlightGlobals.Bodies)
             {
-                for (double latitude = -90; latitude < 90; latitude += Settings.cellDefinitionWidth)
+                if (body.atmosphere) //Check if the body has atmosphere
                 {
-                    for (double longitude = -180; longitude < 180; longitude += (Settings.cellDefinitionWidth * 2))
+                    Debug.Log(body.name + " Has Atmosphere!");
+                    KWSBODY[body] = new List<Cell>();
+                    ///*
+                    for (altitude = 0; altitude < 12500; altitude += 2500)
                     {
-                        Cell newCell = new Cell(latitude, longitude, altitude);
-                        newCell.Latitude = latitude;
-                        newCell.Longitude = longitude;
-                        newCell.Altitude = altitude;
-                        numberOfCells++;
-                        CellID++;
-                        Cells[CellID] = newCell;
-                        //cells.Add(newCell);
+                        for (double latitude = -90; latitude <= 90; latitude += Settings.cellDefinitionWidth)//iterate through the latitudes
+                        {
+                            for (double longitude = -180; longitude < 180; longitude += (Settings.cellDefinitionWidth))//iterate through the longitudes
+                            {
+                                Cell newCell = new Cell(latitude, longitude, altitude, body);
+                                newCell.Latitude = latitude;
+                                newCell.Longitude = longitude;
+                                newCell.Altitude = altitude;
+                                newCell.cellBody = body;
+                                newCell.CellPosition = body.GetWorldSurfacePosition(latitude, longitude, altitude);
+                                newCell.Temperature = FlightGlobals.getExternalTemperature((float)newCell.Altitude, body);
+                                newCell.Pressure = FlightGlobals.getStaticPressure(newCell.CellPosition);
+                                //Cells[CellID] = newCell;
+                                //cells.Add(newCell);
+                                KWSBODY[body].Add(newCell);
+                                //Debug.Log(body + ", " + CellID + " : " + KWSBODY[body][CellID].Latitude + ", " + KWSBODY[body][CellID].Longitude + ", " + KWSBODY[body][CellID].Altitude);
+                                numberOfCells++;
+                                CellID++;
 
+                            }
+                        }
+                        //Debug.Log("Cell Altitude: " + altitude);
+                        //Debug.Log(FlightGlobals.getExternalTemperature((float)altitude, body));
                     }
+                    //*/
+                    /*
+                    for (altitude = 0; altitude < body.maxAtmosphereAltitude; altitude += Settings.cellDefinitionAlt )
+                    {
+                        for (double latitude = -90; latitude < 90; latitude += Settings.cellDefinitionWidth)//iterate through the latitudes
+                        {
+                            for (double longitude = -180; longitude < 180; longitude += (Settings.cellDefinitionWidth))//iterate through the longitudes
+                            {
+                                Cell newCell = new Cell(latitude, longitude, altitude);
+                                newCell.Latitude = latitude;
+                                newCell.Longitude = longitude;
+                                newCell.Altitude = altitude;
+                                newCell.cellBody = body;
+
+                                //Cells[CellID] = newCell;
+                                //cells.Add(newCell);
+                                KWSBODY[body].Add(newCell);
+                                //Debug.Log(body + ", " + CellID + " : " + KWSBODY[body][CellID].Latitude + ", " + KWSBODY[body][CellID].Longitude + ", " + KWSBODY[body][CellID].Altitude);
+                                numberOfCells++;
+                                CellID++;
+
+                            }
+                        }
+                    }
+                    */
+                    /*
+                    for (double latitude = -90; latitude < 90; latitude += Settings.cellDefinitionWidth)//iterate through the latitudes
+                    {
+                        for (double longitude = -180; longitude < 180; longitude += (Settings.cellDefinitionWidth))//iterate through the longitudes
+                        {
+                            Cell newCell = new Cell(latitude, longitude, altitude);
+                            newCell.Latitude = latitude;
+                            newCell.Longitude = longitude;
+                            newCell.Altitude = altitude;
+                            newCell.cellBody = body;
+
+                            //Cells[CellID] = newCell;
+                            //cells.Add(newCell);
+                            KWSBODY[body].Add(newCell);
+                            //Debug.Log(body + ", " + CellID + " : " + KWSBODY[body][CellID].Latitude + ", " + KWSBODY[body][CellID].Longitude + ", " + KWSBODY[body][CellID].Altitude);
+                            numberOfCells++;
+                            CellID++;
+
+                        }
+                    }
+                    */
+                    CellID = 0;
+                    numberOfCells = 0;
+                    altitude = 0;
+                    //if (altitude < body.maxAtmosphereAltitude) { altitude += Settings.cellDefinitionAlt; }//Up the altitude so that a new layer of cells can be created
+                    //else { CellID = 0; numberOfCells = 0; altitude = 0; }
                 }
-                altitude += Settings.cellDefinitionAlt;
+                else
+                {
+                    Debug.Log(body.name + " Doesn't Have Atmosphere!");
+                    CellID = 0;
+                    numberOfCells = 0;
+                    altitude = 0;
+                }
             }
-            else { i++; body = FlightGlobals.Bodies[i]; }
+
+
         }
 
-        public Cell(double latitude, double longitude, double altitude)
+        public Cell(double latitude, double longitude, double altitude, CelestialBody body)
         {
-            cellPosition = body.GetWorldSurfacePosition(latitude, longitude, altitude);
-            double Temperature = FlightGlobals.getExternalTemperature(cellPosition);
-            double Pressure = FlightGlobals.getStaticPressure(cellPosition);
+            CellPosition = body.GetWorldSurfacePosition(latitude, longitude, altitude);
+            //Temperature = 12;
+            Temperature = FlightGlobals.getExternalTemperature(CellPosition);
+            Pressure = FlightGlobals.getStaticPressure(CellPosition);
+            Altitude = altitude;
         }
+
+        public void UpdateCellData()
+        {
+            //CelestialBody TestBody = FlightGlobals.Bodies[1];
+            //KWSBODY[TestBody][0].Temperature = FlightGlobals.getExternalTemperature(KWSBODY[TestBody][0].CellPosition);
+            //Debug.Log(KWSBODY[TestBody][0].Temperature);
+        }
+
+        
 
     }
+ 
 }

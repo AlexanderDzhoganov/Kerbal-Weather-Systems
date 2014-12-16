@@ -10,6 +10,6 @@ namespace Rain
 {
     class Rain
     {
-
+        
     }
 }

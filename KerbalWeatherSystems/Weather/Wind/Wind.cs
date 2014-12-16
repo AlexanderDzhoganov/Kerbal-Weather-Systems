@@ -127,7 +127,7 @@ namespace Weather
 
         }
 
-        public static Vector3 WindStuff()
+        internal static Vector3 WindStuff()
         {
 
             Vessel vessel = FlightGlobals.ActiveVessel;
@@ -655,8 +655,8 @@ namespace Weather
             if(isWindGust == true)
             {
                 timeUntilGust = UnityEngine.Random.Range(0, 10);
-                float numberx = UnityEngine.Random.Range(-20, 20);
-                float numbery = UnityEngine.Random.Range(-20, 20);
+                float numberx = UnityEngine.Random.Range(-10, 10);
+                float numbery = UnityEngine.Random.Range(-10, 10);
                 //float numberz = UnityEngine.Random.Range(-10, 10);
                 //float windGustSpeed = UnityEngine.Random.Range(0,10);
 

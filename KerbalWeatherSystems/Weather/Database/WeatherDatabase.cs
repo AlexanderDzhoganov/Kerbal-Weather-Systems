@@ -72,65 +72,125 @@ namespace Database
 
         //Arrays
 
-        
-        public static bool isCellHigherPressure(int CellIDA, int CellIDB)
+
+        public static int GetCellAtLocation(CelestialBody body, double latitude, double longitude, double altitude)
         {
-            double CellAPressure = 1; // = Cell.Cell[CellIDA].Pressure;
-            double CellBPressure = 2; // = Cell.Cell[CellIDB].Pressure;
+            return CellID;
+        }
+
+        public List<int> getCellNeighbours(CelestialBody body, int CellID)
+        {
+            List<int> Neighbours = new List<int>();
+
+            if (CellID > 0) { Neighbours.Add(CellID - 1); } //Longitude neighbour
+            if (CellID > 359) { Neighbours.Add(CellID - 360); } //Latitude neighbour
+            if (CellID > 64799) { Neighbours.Add(CellID - 64800); } //Altitude neighbour
+
+            if (CellID < Cell.KWSBODY[body].Count - 64800) { Neighbours.Add(CellID + 64800); }
+            if (CellID < Cell.KWSBODY[body].Count - 360) { Neighbours.Add(CellID + 360); }
+            if (CellID < Cell.KWSBODY[body].Count - 1) { Neighbours.Add(CellID + 1); }
+
+            //Neighbours.Add(CellID + 64800);
+            //Neighbours.Add(CellID + 360);
+            //Neighbours.Add(CellID + 1);
+
+            return Neighbours;
+        }
+
+        public static float GetCellWindSpeed(CelestialBody body, int CellID)
+        {
+            float cellWindSpeed = Cell.KWSBODY[body][CellID].WindSpeed;
+            return cellWindSpeed;
+        }
+
+        public static Vector3 getCellWindDirection(CelestialBody body, int CellID)
+        {
+            Vector3 cellWindDirection = Cell.KWSBODY[body][CellID].CellWindDirection;
+            return cellWindDirection;
+        }
+        
+        public static bool isCellHigherPressure(CelestialBody body, int CellIDA, int CellIDB)
+        {
+            double CellAPressure = Cell.KWSBODY[body][CellIDA].Pressure;
+            double CellBPressure = Cell.KWSBODY[body][CellIDB].Pressure;
 
             if (CellAPressure > CellBPressure) { return true; }
             else { return false; }
             
         }
-
-        public static int getNumberOfCells(CelestialBody Body)
+        public static bool isCellHigherTemperature(CelestialBody body, int CellIDA, int CellIDB)
         {
-            //numberOfCells = Cell.Cell.Length;
+            double CellATemperature = Cell.KWSBODY[body][CellIDA].Temperature;
+            double CellBTemperature = Cell.KWSBODY[body][CellIDB].Temperature;
+
+            if (CellATemperature > CellBTemperature) { return true; }
+            else { return false; }
+
+        }
+        public static bool isCellMoreHumid(CelestialBody body, int CellIDA, int CellIDB)
+        {
+            double CellAHumidity = Cell.KWSBODY[body][CellIDA].Humidity;
+            double CellBHumidity = Cell.KWSBODY[body][CellIDB].Humidity;
+
+            if (CellAHumidity > CellBHumidity) { return true; }
+            else { return false; }
+
+        }
+
+        public static int getNumberOfCells(CelestialBody body)
+        {
+            //numberOfCells = Cell.KWSBODY[body].Length;
             return numberOfCells;
         }
 
-        public static double getCellAltitude(int CellID)
+        public static double getCellAltitude(CelestialBody body, int CellID)
         {
-            double cellAltitude = Cell.Cells[CellID].Altitude;
+            double cellAltitude = Cell.KWSBODY[body][CellID].Altitude;
             return cellAltitude;
         }
 
-        public static double getCellLong(int CellID)
+        public static double getCellLong(CelestialBody body, int CellID)
         {
-            double Longitude = Cell.Cells[CellID].Longitude;
+            double Longitude = Cell.KWSBODY[body][CellID].Longitude;
             return Longitude;
         }
 
-        public static double getCellLat(int CellID)
+        public static double getCellLat(CelestialBody body, int CellID)
         {
-            double Latitude = Cell.Cells[CellID].Latitude;
+            double Latitude = Cell.KWSBODY[body][CellID].Latitude;
             return Latitude;
         }
 
-        public static double getCellHumidity(int CellID)
+        public static double getCellHumidity(CelestialBody body, int CellID)
         {
-            double Humidity = Cell.Cells[CellID].Humidity;
+            double Humidity = Cell.KWSBODY[body][CellID].Humidity;
             return Humidity;
         }
 
-        public static double getCellTemperature(int CellID)
+        public static double getCellTemperature(CelestialBody body, int CellID)
         {
-            double Temperature = Cell.Cells[CellID].Temperature;
+            double Temperature = Cell.KWSBODY[body][CellID].Temperature;
             return Temperature;
         }
 
-        public static double getCellPressure(int CellID)
+        public static double getCellPressure(CelestialBody body, int CellID)
         {
-            double Pressure = Cell.Cells[CellID].Pressure;
+            double Pressure = Cell.KWSBODY[body][CellID].Pressure;
             return Pressure;
         }
 
-        public static int getCellID()
+        public static Vector3 getCellPosition(CelestialBody body, int CellID)
+        {
+            Vector3 CellPosition = Cell.KWSBODY[body][CellID].CellPosition;
+            return CellPosition;
+        }
+
+        public static int getCellID(double latitude, double longitude, double altitude, CelestialBody body)
         {
             return CellID;
         }
 
-        public static float GetOffSetMultiplier()
+        internal static float GetOffSetMultiplier()
         {
             try
             {

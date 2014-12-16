@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
+using KSP.IO;
 
 namespace Database
 {
-    public class Settings
+    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
+    public class Settings : MonoBehaviour
     {
-        internal static int cellDefinitionAlt = 250;
-        internal static double cellDefinitionWidth = 0.1;
+        internal static int cellDefinitionAlt = 2500;
+        internal static double cellDefinitionWidth = 1;
     }
 }

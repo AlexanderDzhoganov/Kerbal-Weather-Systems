@@ -26,6 +26,7 @@ using ferram4;
 using Weather;
 using Clouds;
 using Animations;
+using Database;
 
 using Random = UnityEngine.Random;
 
@@ -45,6 +46,7 @@ namespace Weather
         private static Rect WindStormGUI = new Rect(250, 100, 325, 125);
         private Rect WindSettingsGUI = new Rect(WindGUI.xMax, WindGUI.yMin + 50, 100, 125);
         private static Rect WeatherDataGUI = new Rect(250, 100, 210, 250);
+        private Rect CellDataTestGUI = new Rect(250,100,200,250);
 
         //Public variables
 
@@ -69,6 +71,7 @@ namespace Weather
         public bool showWindLines = false;
         public bool showWindSpeedSettings = false;
         public bool showWeatherDataGUI = false;
+        public bool showCellDataTestGUI = false;
 
         //Integers
         public int windDirectionNumb;
@@ -80,8 +83,10 @@ namespace Weather
         int stormGUIID;
         int windSettingsGUIID;
         int windStormGUIID;
-        public static int WindStormDirection;
+        internal static int WindStormDirection;
         int weatherDataGUIID;
+        int cellDataTestGUIID;
+        int CellIDInt = 0;
 
         //Singles
 
@@ -97,11 +102,11 @@ namespace Weather
 
         //Floating point numbers
         [Persistent]
-        public static float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
+        internal static float windSpeed = 0.0f; //Wind speed, will probs turn into a double if possible.
         public float AtmoDensity = (float)FlightGlobals.ActiveVessel.atmDensity; //DO NOT make this static, it will kill things.
-        public static float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
-        public static float WindGustTime = 5.0f;
-        public static float Temperature;
+        internal static float MaxWindGustSpeed = 0.0f; //Maximum wind gust speed for Wind Storms
+        internal static float WindGustTime = 5.0f;
+        internal static float Temperature;
         //public static float TextureSpeedX;
         //public static float TextureSpeedY;
         //private float Anger = 1/3f; //You've found my easter egg!
@@ -118,6 +123,7 @@ namespace Weather
         public String WSMGSString = "1.0"; //String for Wind Storm Max Gust Speed String
         public String WindGustTimeString = "1.0"; //String for time it takes to reach max Gust
         public static String WindGustDirectionString = "1"; //String used for direction
+        public string CellIDLabel = "1";
 
         //Test Variables
         private LineRenderer line = null;
@@ -155,6 +161,7 @@ namespace Weather
             windSettingsGUIID = Guid.NewGuid().GetHashCode();
             windStormGUIID = Guid.NewGuid().GetHashCode();
             weatherDataGUIID = Guid.NewGuid().GetHashCode();
+            cellDataTestGUIID = Guid.NewGuid().GetHashCode();
 
             Random.seed = (int)System.DateTime.Now.Ticks; //helps with the random process
             RenderingManager.AddToPostDrawQueue(0, OnDraw); //Draw the stuffs
@@ -172,6 +179,7 @@ namespace Weather
             WSMGSString = string.Empty;
             WindGustTimeString = string.Empty;
             WindGustDirectionString = string.Empty;
+            CellIDLabel = string.Empty;
 
 
         }
@@ -297,7 +305,12 @@ namespace Weather
                 //Starting the wind gusts
                 if(Wind.isWindStorm == true && Wind.KillingWind == false) {windSpeed = Wind.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
 
-
+                //CelestialBody TestBody = FlightGlobals.Bodies[1];
+                //Cell.KWSBODY[TestBody][0].Temperature = FlightGlobals.getExternalTemperature(Cell.KWSBODY[TestBody][0].CellPosition);
+                //Debug.Log(Cell.KWSBODY[TestBody][0].Temperature);
+                //Debug.Log(FlightGlobals.getExternalTemperature(FlightGlobals.ActiveVessel.GetWorldPos3D()));
+                //Debug.Log(FlightGlobals.ActiveVessel.flightIntegrator.getExternalTemperature());
+                //Debug.Log(FlightGlobals.getExternalTemperature(altitude, body));
             }
         }
 
@@ -405,6 +418,10 @@ namespace Weather
             {
                 WeatherDataGUI = GUI.Window(weatherDataGUIID, WeatherDataGUI, WeatherDataPanel, "Weather Data~");
             }
+            if(showCellDataTestGUI)
+            {
+                CellDataTestGUI = GUI.Window(cellDataTestGUIID, CellDataTestGUI, CellDataTest, "Cell Test~");
+            }
 
 
         }
@@ -434,6 +451,7 @@ namespace Weather
                 showSnowControls = GUILayout.Toggle(showSnowControls, "Snow"); //Do the Toggle bullshittery, then Call the Snow Control Panel
                 showStormControls = GUILayout.Toggle(showStormControls, "Storms"); //Do the Toggle bullshittery, then Call the Storm Control Panel
                 showWeatherDataGUI = GUILayout.Toggle(showWeatherDataGUI, "Weather Data"); //Do the Toggle bullshittery, then Call the Weather Data Panel
+                showCellDataTestGUI = GUILayout.Toggle(showCellDataTestGUI, "Cell Test");
                 GUI.DragWindow();
             }
 
@@ -757,9 +775,34 @@ namespace Weather
             GUILayout.Label("Atmo. Dens: " + FlightGlobals.ActiveVessel.atmDensity.ToString("0.0000"));
             GUILayout.Label("Temp: " + FlightGlobals.ActiveVessel.flightIntegrator.getExternalTemperature().ToString("0.00"));
             GUILayout.Label("Wind Direction: " + windDirection);
-            GUILayout.Label("Wind Speed: " + (windSpeed).ToString("0.000") + " km/h");
+            GUILayout.Label("Wind Speed: " + (windSpeed * 3.6).ToString("0.000") + " km/h");
             GUILayout.EndVertical();
 
+            GUI.DragWindow();
+        }
+
+        void CellDataTest(int windowId)
+        {
+            
+
+            GUILayout.BeginVertical();
+            //GUILayout.Label("CellID: " + CellIDLabel); CellIDLabel = GUILayout.TextField(CellIDLabel, 10); CellIDInt = int.Parse(CellIDLabel);
+            GUILayout.Label("CellID: " + CellIDInt);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("CellID ++")) { if(CellIDInt < Cell.KWSBODY[FlightGlobals.currentMainBody].Count - 1) {CellIDInt++;} }
+            if (GUILayout.Button("CellID +360")) { if(CellIDInt < Cell.KWSBODY[FlightGlobals.currentMainBody].Count - 360){CellIDInt += 360;} }
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("CellID --")) { if(CellIDInt > 0){CellIDInt--;} }
+            if (GUILayout.Button("CellID -360")) { if(CellIDInt > 359){CellIDInt -= 360;} }
+            GUILayout.EndHorizontal();
+            GUILayout.Label("Temperature: " + WeatherDatabase.getCellTemperature(FlightGlobals.currentMainBody, CellIDInt).ToString("0.00"));
+            GUILayout.Label("Pressure: " + WeatherDatabase.getCellPressure(FlightGlobals.currentMainBody, CellIDInt));
+            GUILayout.Label("Cell Latitude: " + WeatherDatabase.getCellLat(FlightGlobals.currentMainBody, CellIDInt));
+            GUILayout.Label("Cell Longitude: " + WeatherDatabase.getCellLong(FlightGlobals.currentMainBody, CellIDInt));
+            GUILayout.Label("Cell Altitude: " + WeatherDatabase.getCellAltitude(FlightGlobals.currentMainBody, CellIDInt));
+            //GUILayout.Label("Cell Pos: " + Cell.KWSBODY[FlightGlobals.currentMainBody][CellIDInt].CellPosition);
+            GUILayout.EndVertical();
             GUI.DragWindow();
         }
         
