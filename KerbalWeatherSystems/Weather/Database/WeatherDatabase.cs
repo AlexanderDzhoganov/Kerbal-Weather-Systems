@@ -73,22 +73,31 @@ namespace Database
         //Arrays
 
 
+        public static float getPressureDifference(CelestialBody body, int CellIDA, int CellIDB)
+        {
+            float PressureDifference = (float)Math.Abs((Cell.KWSBODY[body][CellIDA].Pressure - Cell.KWSBODY[body][CellIDB].Pressure));
+
+
+            return PressureDifference;
+        }
+
         public static int GetCellAtLocation(CelestialBody body, double latitude, double longitude, double altitude)
         {
             return CellID;
         }
 
-        public List<int> getCellNeighbours(CelestialBody body, int CellID)
+        public static List<int> getCellNeighbours(CelestialBody body, int CellID)
         {
             List<int> Neighbours = new List<int>();
 
-            if (CellID > 0) { Neighbours.Add(CellID - 1); } //Longitude neighbour
-            if (CellID > 359) { Neighbours.Add(CellID - 360); } //Latitude neighbour
-            if (CellID > 64799) { Neighbours.Add(CellID - 64800); } //Altitude neighbour
-
-            if (CellID < Cell.KWSBODY[body].Count - 64800) { Neighbours.Add(CellID + 64800); }
-            if (CellID < Cell.KWSBODY[body].Count - 360) { Neighbours.Add(CellID + 360); }
-            if (CellID < Cell.KWSBODY[body].Count - 1) { Neighbours.Add(CellID + 1); }
+            if (CellID > 0) { Neighbours.Add(CellID - 1); } //Longitude neighbour //1
+            if (CellID < Cell.KWSBODY[body].Count - 1) { Neighbours.Add(CellID + 1); } //2
+            if (CellID > 359) { Neighbours.Add(CellID - 360); } //Latitude neighbour //3
+            if (CellID < Cell.KWSBODY[body].Count - 360) { Neighbours.Add(CellID + 360); } //4
+            if (CellID > 64799) { Neighbours.Add(CellID - 64800); } //Altitude neighbour //5
+            if (CellID < Cell.KWSBODY[body].Count - 64800) { Neighbours.Add(CellID + 64800); } //6
+            
+            
 
             //Neighbours.Add(CellID + 64800);
             //Neighbours.Add(CellID + 360);

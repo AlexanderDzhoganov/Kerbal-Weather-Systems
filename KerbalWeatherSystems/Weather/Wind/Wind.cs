@@ -141,7 +141,7 @@ namespace Weather
             North.Normalize();//Guess what? Normalize that shit
 
 
-            windDirection = windGustDirection + localWindVector + WindDirTendancy(Latitude, orbitingBody) + WindGust;
+            windDirection = windGustDirection + localWindVector; // +WindDirTendancy(Latitude, orbitingBody);// + WindGust;
             //windDirection.x = Mathf.Max(windGustDirection.x, localWindVector.x, WindDirTendancy(Latitude, orbitingBody).x, WindGust.x);
             //windDirection.y = Mathf.Max(windGustDirection.y, localWindVector.y, WindDirTendancy(Latitude, orbitingBody).y, WindGust.y);
             //windDirection.z = Mathf.Max(windGustDirection.z, localWindVector.z, WindDirTendancy(Latitude, orbitingBody).z, WindGust.z);
@@ -158,6 +158,14 @@ namespace Weather
 
                 return Vector3.zero;
             }
+        }
+
+        public void pressureGradientForce()
+        {
+            //F = ma
+            //F = -dP * dA = p * dA * dz * a
+
+
         }
 
         private static Vector3 WindDirTendancy(double latitude, CelestialBody body)
@@ -655,8 +663,8 @@ namespace Weather
             if(isWindGust == true)
             {
                 timeUntilGust = UnityEngine.Random.Range(0, 10);
-                float numberx = UnityEngine.Random.Range(-10, 10);
-                float numbery = UnityEngine.Random.Range(-10, 10);
+                float numberx = UnityEngine.Random.Range(-5, 5);
+                float numbery = UnityEngine.Random.Range(-5, 5);
                 //float numberz = UnityEngine.Random.Range(-10, 10);
                 //float windGustSpeed = UnityEngine.Random.Range(0,10);
 

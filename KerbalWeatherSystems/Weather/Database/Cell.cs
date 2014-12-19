@@ -90,11 +90,13 @@ namespace Database
         public double Longitude;
         //public double LongMax;
         public double Altitude;
+        public float Density;
 
         public float WindSpeed;
 
         public Vector3 CellWindDirection;
         public Vector3 CellPosition;
+        public Vector3 CellPressureGradientAcc;
 
         public static Cell[] Cells = new Cell[numberOfCells];
         //public static Array KWSBODY = new Array[numberOfKWSBodies];
@@ -148,7 +150,8 @@ namespace Database
                                 newCell.cellBody = body;
                                 newCell.CellPosition = body.GetWorldSurfacePosition(latitude, longitude, altitude);
                                 newCell.Temperature = FlightGlobals.getExternalTemperature((float)newCell.Altitude, body);
-                                newCell.Pressure = FlightGlobals.getStaticPressure(newCell.CellPosition);
+                                newCell.Pressure = FlightGlobals.getStaticPressure(newCell.Altitude, body);
+                                newCell.Density = (101325f * (float)(newCell.Pressure)) / 287.058f * newCell.Temperature;
                                 //Cells[CellID] = newCell;
                                 //cells.Add(newCell);
                                 KWSBODY[body].Add(newCell);

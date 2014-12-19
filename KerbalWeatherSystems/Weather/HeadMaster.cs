@@ -305,12 +305,8 @@ namespace Weather
                 //Starting the wind gusts
                 if(Wind.isWindStorm == true && Wind.KillingWind == false) {windSpeed = Wind.WindGustStorm(windSpeed, MaxWindGustSpeed, WindGustTime);}
 
-                //CelestialBody TestBody = FlightGlobals.Bodies[1];
-                //Cell.KWSBODY[TestBody][0].Temperature = FlightGlobals.getExternalTemperature(Cell.KWSBODY[TestBody][0].CellPosition);
-                //Debug.Log(Cell.KWSBODY[TestBody][0].Temperature);
-                //Debug.Log(FlightGlobals.getExternalTemperature(FlightGlobals.ActiveVessel.GetWorldPos3D()));
-                //Debug.Log(FlightGlobals.ActiveVessel.flightIntegrator.getExternalTemperature());
-                //Debug.Log(FlightGlobals.getExternalTemperature(altitude, body));
+                
+
             }
         }
 
@@ -774,7 +770,7 @@ namespace Weather
             GUILayout.Label("Atmo. Press: " + FlightGlobals.ActiveVessel.staticPressure.ToString("0.0000"));
             GUILayout.Label("Atmo. Dens: " + FlightGlobals.ActiveVessel.atmDensity.ToString("0.0000"));
             GUILayout.Label("Temp: " + FlightGlobals.ActiveVessel.flightIntegrator.getExternalTemperature().ToString("0.00"));
-            GUILayout.Label("Wind Direction: " + windDirection);
+            GUILayout.Label("Wind Direction: " + Wind.windDirection);
             GUILayout.Label("Wind Speed: " + (windSpeed * 3.6).ToString("0.000") + " km/h");
             GUILayout.EndVertical();
 
@@ -796,8 +792,9 @@ namespace Weather
             if (GUILayout.Button("CellID --")) { if(CellIDInt > 0){CellIDInt--;} }
             if (GUILayout.Button("CellID -360")) { if(CellIDInt > 359){CellIDInt -= 360;} }
             GUILayout.EndHorizontal();
+            if(GUILayout.Button("CellID 0")) {CellIDInt = 0;}
             GUILayout.Label("Temperature: " + WeatherDatabase.getCellTemperature(FlightGlobals.currentMainBody, CellIDInt).ToString("0.00"));
-            GUILayout.Label("Pressure: " + WeatherDatabase.getCellPressure(FlightGlobals.currentMainBody, CellIDInt));
+            GUILayout.Label("Pressure: " + WeatherDatabase.getCellPressure(FlightGlobals.currentMainBody, CellIDInt).ToString("0.000"));
             GUILayout.Label("Cell Latitude: " + WeatherDatabase.getCellLat(FlightGlobals.currentMainBody, CellIDInt));
             GUILayout.Label("Cell Longitude: " + WeatherDatabase.getCellLong(FlightGlobals.currentMainBody, CellIDInt));
             GUILayout.Label("Cell Altitude: " + WeatherDatabase.getCellAltitude(FlightGlobals.currentMainBody, CellIDInt));
